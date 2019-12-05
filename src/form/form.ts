@@ -8,7 +8,7 @@ import { FieldData } from 'rc-field-form/lib/interface';
 export interface FormProps<T extends Record<string | number, any>>
   extends Omit<RcFormProps, 'onFinish'> {
   initialValues?: Partial<T>;
-  onFinish: (values: T) => void;
+  onFinish?: (values: T) => void;
 }
 
 type OmititedRcFieldProps = Omit<
@@ -167,7 +167,7 @@ export function createForm<T extends Record<string | number, any>>({
           {
             ...props,
             ref,
-            onFinish: (store: any) => onFinish(store)
+            onFinish: (store: any) => onFinish && onFinish(store)
           },
           children
         )
