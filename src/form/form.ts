@@ -1,19 +1,19 @@
-import React, { ReactElement } from "react";
-import RcForm, { Field as RcField, FormInstance } from "rc-field-form";
-import { FormProps as RcFormProps } from "rc-field-form/es/Form";
-import { FieldProps as RcFieldProps } from "rc-field-form/es/Field";
-import { Validator, compose } from "./validators";
-import { FieldData } from "rc-field-form/lib/interface";
+import React, { ReactElement } from 'react';
+import RcForm, { Field as RcField, FormInstance } from 'rc-field-form';
+import { FormProps as RcFormProps } from 'rc-field-form/es/Form';
+import { FieldProps as RcFieldProps } from 'rc-field-form/es/Field';
+import { Validator, compose } from './validators';
+import { FieldData } from 'rc-field-form/lib/interface';
 
 export interface FormProps<T extends Record<string | number, any>>
-  extends Omit<RcFormProps, "onFinish"> {
+  extends Omit<RcFormProps, 'onFinish'> {
   initialValues?: Partial<T>;
   onFinish: (values: T) => void;
 }
 
 type OmititedRcFieldProps = Omit<
   RcFormProps,
-  "name" | "dependencies" | "rules" | "shouldUpdate" | "children"
+  'name' | 'dependencies' | 'rules' | 'shouldUpdate' | 'children'
 >;
 
 interface BaseFieldProps<T extends {}, K extends PropertyKey = keyof T>
@@ -47,17 +47,18 @@ type FieldProps<T extends {}, K extends PropertyKey = keyof T> = BaseFieldProps<
     | {
         deps: K[];
         children: (value: T) => ReactElement;
-      });
+      }
+  );
 
 export type FormItemProps<T extends Record<string | number, any>> = FieldProps<
   T
 > & { label?: string; noStyle?: boolean };
 
-type Rule = NonNullable<RcFieldProps["rules"]>[number];
+type Rule = NonNullable<RcFieldProps['rules']>[number];
 
 function createShouldUpdate<FieldName extends string | number>(
   names: FieldName[]
-): RcFieldProps["shouldUpdate"] {
+): RcFieldProps['shouldUpdate'] {
   return (prev, curr) => {
     for (const name of names) {
       if (prev[name] !== curr[name]) {
@@ -69,12 +70,12 @@ function createShouldUpdate<FieldName extends string | number>(
 }
 
 const defaultFormItemClassName: Required<FormItemClassName> = {
-  item: "rc-form-item",
-  label: "rc-form-item-label",
-  error: "rc-form-item-error",
-  touched: "rc-form-item-touched",
-  validating: "rc-form-item-validating",
-  help: "rc-form-item-help"
+  item: 'rc-form-item',
+  label: 'rc-form-item-label',
+  error: 'rc-form-item-error',
+  touched: 'rc-form-item-touched',
+  validating: 'rc-form-item-validating',
+  help: 'rc-form-item-help'
 };
 
 export function createForm<T extends Record<string | number, any>>({
@@ -105,7 +106,7 @@ export function createForm<T extends Record<string | number, any>>({
           ({ getFieldsValue }) => ({
             validateTrigger,
             validator:
-              typeof validators === "function"
+              typeof validators === 'function'
                 ? compose(validators(getFieldsValue(deps) as any))
                 : compose(validators)
           })
@@ -118,31 +119,38 @@ export function createForm<T extends Record<string | number, any>>({
       (_: any, { touched, validating }: FieldData, form: FormInstance) => {
         const { getFieldsValue, getFieldError } = form;
         const errors = getFieldError(props.name);
+
+        const field = React.createElement(
+          RcField,
+          {
+            rules,
+            shouldUpdate: deps && createShouldUpdate(deps),
+            ...props
+          },
+          typeof children !== 'function'
+            ? children
+            : children(getFieldsValue(deps) as any)
+        );
+
+        if (noStyle) {
+          return field;
+        }
+
         return React.createElement(
-          "div",
+          'div',
           {
             className: [
               ClassName.item,
-              errors && !!errors.length ? ClassName.error : "",
-              touched ? ClassName.touched : "",
-              validating ? ClassName.validating : ""
+              errors && !!errors.length ? ClassName.error : '',
+              touched ? ClassName.touched : '',
+              validating ? ClassName.validating : ''
             ]
-              .join(" ")
+              .join(' ')
               .trim()
           },
-          React.createElement("label", { className: ClassName.label }, label),
-          React.createElement(
-            RcField,
-            {
-              rules,
-              shouldUpdate: deps && createShouldUpdate(deps),
-              ...props
-            },
-            typeof children !== "function"
-              ? children
-              : children(getFieldsValue(deps) as any)
-          ),
-          React.createElement("div", { className: ClassName.help }, errors)
+          React.createElement('label', { className: ClassName.label }, label),
+          field,
+          React.createElement('div', { className: ClassName.help }, errors)
         );
       }
     );

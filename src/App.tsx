@@ -8,12 +8,18 @@ import {
 } from 'react-router-dom';
 import { PATHS } from './constants';
 import { Login } from './pages/Login';
+import { ModifyPassword } from './pages/ModifyPassword';
 
-const route: NavLinkProps[] = [
+const route: Array<Omit<NavLinkProps, 'to'> & { to: string }> = [
   {
     to: PATHS.LOGIN,
     component: Login,
     children: 'Login'
+  },
+  {
+    to: PATHS.MODIFY_PASSWORD,
+    component: ModifyPassword,
+    children: 'Modify Password'
   }
 ];
 
@@ -39,7 +45,7 @@ export const App = () => (
     <Switch>
       <Route exact path={PATHS.HOME} component={Home} />
       {route.map(({ to, component }, index) => (
-        <Route key={index} to={to} component={component} />
+        <Route key={index} path={to} component={component} />
       ))}
     </Switch>
   </Router>

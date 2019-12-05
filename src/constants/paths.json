@@ -1,4 +1,5 @@
 {
   "HOME": "/",
-  "LOGIN": "/login"
+  "LOGIN": "/login",
+  "MODIFY_PASSWORD": "/modify-password"
 }
