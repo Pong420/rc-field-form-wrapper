@@ -13,7 +13,7 @@ export interface FormProps<T extends Record<string | number, any>>
 
 type OmititedRcFieldProps = Omit<
   RcFieldProps,
-  'name' | 'dependencies' | 'shouldUpdate' | 'children'
+  'name' | 'dependencies' | 'children'
 >;
 
 interface BaseFieldProps<T extends {}, K extends PropertyKey = keyof T>
@@ -56,7 +56,7 @@ export interface FormItemClassName {
 
 type Rule = NonNullable<RcFieldProps['rules']>[number];
 
-function createShouldUpdate<FieldName extends string | number>(
+export function createShouldUpdate<FieldName extends string | number>(
   names: FieldName[]
 ): RcFieldProps['shouldUpdate'] {
   return (prev, curr) => {
@@ -102,7 +102,7 @@ export function createForm<T extends Record<string | number, any>>({
 
     const ClassName = { ...defaultFormItemClassName, ...itemClassName };
 
-    const rules_: Rule[] =
+    const _rules: Rule[] =
       typeof validators === 'function'
         ? [
             ({ getFieldsValue }) => ({
@@ -117,20 +117,22 @@ export function createForm<T extends Record<string | number, any>>({
       RcField,
       { dependencies: [props.name] },
       (_: any, { touched, validating }: FieldData, form: FormInstance) => {
-        const { getFieldsValue, getFieldError } = form;
+        const { getFieldError } = form;
         const errors = getFieldError(props.name);
 
         const field = React.createElement(
           RcField,
           {
-            rules: [...rules, ...rules_],
+            rules: [...rules, ..._rules],
             validateTrigger,
+            dependencies: deps,
             shouldUpdate: deps && createShouldUpdate(deps),
             ...props
           },
           typeof children !== 'function'
             ? children
-            : children(getFieldsValue(deps) as any)
+            : (_: any, __: FieldData, { getFieldsValue }: FormInstance) =>
+                children(getFieldsValue(deps) as any)
         );
 
         if (noStyle) {

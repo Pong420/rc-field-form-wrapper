@@ -8,6 +8,7 @@ interface Param$ModifyPassword {
   old_passwrod: string;
   new_password: string;
   confirm_new_password: string;
+  price: number;
 }
 
 const { Form, FormItem } = createForm<Param$ModifyPassword>();

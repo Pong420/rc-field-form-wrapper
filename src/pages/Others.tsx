@@ -7,7 +7,8 @@ import {
   Checkbox,
   HTMLSelect,
   RadioGroup,
-  Radio
+  Radio,
+  Switch
 } from '@blueprintjs/core';
 import { createForm } from '../form';
 import { useBoolean } from '../hooks/useBoolean';
@@ -17,6 +18,8 @@ interface Param$Others {
   checkbox: boolean;
   select: string;
   radio: string;
+  switch: boolean;
+  price: number;
 }
 
 const { Form, FormItem } = createForm<Param$Others>();
@@ -28,14 +31,21 @@ export function Others() {
     <>
       <Button onClick={setVisible.on}>Others</Button>
       <Dialog
-        className="login"
-        title="Login"
+        className="Ohters"
+        title="Ohters"
         isOpen={visible}
         onClose={setVisible.off}
       >
         <div className={Classes.DIALOG_BODY}>
           <Form
-            initialValues={{ nickname: '', checkbox: false, select: 'react' }}
+            initialValues={{
+              nickname: '',
+              checkbox: false,
+              select: 'react',
+              radio: 'buy',
+              switch: true,
+              price: 0
+            }}
             onFinish={console.log}
           >
             <FormItem name="nickname" label="Nick Name">
@@ -54,11 +64,28 @@ export function Others() {
               </HTMLSelect>
             </FormItem>
 
-            <FormItem name="radio" label="Radio">
-              <RadioGroup onChange={() => {}}>
+            <FormItem
+              name="radio"
+              label="Radio"
+              valuePropName="selectedValue"
+              getValueFromEvent={event => event.target.value}
+            >
+              <RadioGroup inline onChange={() => {}}>
                 <Radio value="buy">Buy</Radio>
                 <Radio value="sell">Sell</Radio>
               </RadioGroup>
+            </FormItem>
+
+            <FormItem name="switch" label="Switch" valuePropName="checked">
+              <Switch />
+            </FormItem>
+
+            <FormItem name="price" label="Price">
+              <InputGroup />
+            </FormItem>
+
+            <FormItem deps={['price']} noStyle>
+              {({ price }) => <div>Discounted price: {price * 0.85}</div>}
             </FormItem>
 
             <Button fill type="submit" intent="primary">
