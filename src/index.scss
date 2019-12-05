@@ -39,13 +39,27 @@ a {
 
 #root {
   @include flex();
-  @include dimen(100%);
+  @include sq-dimen(100%);
   min-height: 100%;
   max-width: 1440px;
   margin: auto;
 }
 
-.home {
+.app {
   @include sq-dimen(100%);
   @include flex(center, center);
+
+  .app-content-body {
+    button {
+      + button {
+        margin-left: 10px;
+      }
+    }
+  }
+}
+
+.bp3-dialog-body {
+  button + button {
+    margin-top: 10px;
+  }
 }

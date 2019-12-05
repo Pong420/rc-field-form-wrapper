@@ -1,7 +1,7 @@
 import React from 'react';
-import { Card, Button, InputGroup } from '@blueprintjs/core';
-import { createForm, validators } from '../../form';
-import { ReactComponent as Logo } from '../../assets/logo.svg';
+import { Classes, Button, InputGroup, Dialog } from '@blueprintjs/core';
+import { createForm, validators } from '../form';
+import { useBoolean } from '../hooks/useBoolean';
 
 interface Param$Login {
   username: string;
@@ -11,13 +11,18 @@ interface Param$Login {
 const { Form, FormItem } = createForm<Param$Login>();
 
 export function Login() {
+  const [visible, setVisible] = useBoolean();
+
   return (
-    <div className="login">
-      <Card className="login-card" elevation={3}>
-        <div className="login-card-header">
-          <Logo />
-        </div>
-        <div className="login-card-body">
+    <>
+      <Button onClick={setVisible.on}>Login Form</Button>
+      <Dialog
+        className="login"
+        title="Login"
+        isOpen={visible}
+        onClose={setVisible.off}
+      >
+        <div className={Classes.DIALOG_BODY}>
           <Form
             initialValues={{ username: '', password: '' }}
             onFinish={console.log}
@@ -44,9 +49,13 @@ export function Login() {
             <Button fill type="submit" intent="primary">
               Login
             </Button>
+
+            <Button fill type="submit" onClick={setVisible.off}>
+              Cancel
+            </Button>
           </Form>
         </div>
-      </Card>
-    </div>
+      </Dialog>
+    </>
   );
 }

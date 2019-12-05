@@ -1,7 +1,7 @@
 import React from 'react';
-import { Card, Button, InputGroup } from '@blueprintjs/core';
-import { createForm, validators } from '../../form';
-import { ReactComponent as Logo } from '../../assets/logo.svg';
+import { Classes, Button, InputGroup, Dialog } from '@blueprintjs/core';
+import { createForm, validators } from '../form';
+import { useBoolean } from '../hooks/useBoolean';
 
 interface Param$ModifyPassword {
   old_passwrod: string;
@@ -12,13 +12,18 @@ interface Param$ModifyPassword {
 const { Form, FormItem } = createForm<Param$ModifyPassword>();
 
 export function ModifyPassword() {
+  const [visible, setVisible] = useBoolean();
+
   return (
-    <div className="modify-password">
-      <Card className="modify-password-card" elevation={3}>
-        <div className="modify-password-card-header">
-          <Logo />
-        </div>
-        <div className="modify-password-card-body">
+    <>
+      <Button onClick={setVisible.on}>Modify Password</Button>
+      <Dialog
+        className="modify-password"
+        title="Modify Password"
+        isOpen={visible}
+        onClose={setVisible.off}
+      >
+        <div className={Classes.DIALOG_BODY}>
           <Form
             initialValues={{
               old_passwrod: '',
@@ -73,9 +78,13 @@ export function ModifyPassword() {
             <Button fill type="submit" intent="primary">
               Confirm
             </Button>
+
+            <Button fill type="submit" onClick={setVisible.off}>
+              Cancel
+            </Button>
           </Form>
         </div>
-      </Card>
-    </div>
+      </Dialog>
+    </>
   );
 }
