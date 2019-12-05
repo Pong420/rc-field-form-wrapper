@@ -2,6 +2,7 @@ import React from 'react';
 import { Classes, Button, InputGroup, Dialog } from '@blueprintjs/core';
 import { createForm, validators } from '../form';
 import { useBoolean } from '../hooks/useBoolean';
+import { useFakeRequest } from '../hooks/useFakeRequest';
 
 interface Param$Login {
   username: string;
@@ -12,6 +13,7 @@ const { Form, FormItem } = createForm<Param$Login>();
 
 export function Login() {
   const [visible, setVisible] = useBoolean();
+  const { loading, run } = useFakeRequest();
 
   return (
     <>
@@ -23,10 +25,7 @@ export function Login() {
         onClose={setVisible.off}
       >
         <div className={Classes.DIALOG_BODY}>
-          <Form
-            initialValues={{ username: '', password: '' }}
-            onFinish={console.log}
-          >
+          <Form initialValues={{ username: '', password: '' }} onFinish={run}>
             <FormItem
               name="username"
               label="Username"
@@ -37,16 +36,12 @@ export function Login() {
             <FormItem
               name="password"
               label="Password"
-              validators={[
-                validators.required('Please input password'),
-                validators.passwordFormat(
-                  'Password must include english and number'
-                )
-              ]}
+              validators={[validators.required('Please input password')]}
             >
               <InputGroup type="password" />
             </FormItem>
-            <Button fill type="submit" intent="primary">
+
+            <Button fill type="submit" intent="primary" loading={loading}>
               Login
             </Button>
 

@@ -2,6 +2,7 @@ import React from 'react';
 import { Classes, Button, InputGroup, Dialog } from '@blueprintjs/core';
 import { createForm, validators } from '../form';
 import { useBoolean } from '../hooks/useBoolean';
+import { useFakeRequest } from '../hooks/useFakeRequest';
 
 interface Param$ModifyPassword {
   old_passwrod: string;
@@ -13,6 +14,7 @@ const { Form, FormItem } = createForm<Param$ModifyPassword>();
 
 export function ModifyPassword() {
   const [visible, setVisible] = useBoolean();
+  const { loading, run } = useFakeRequest();
 
   return (
     <>
@@ -30,7 +32,7 @@ export function ModifyPassword() {
               new_password: '',
               confirm_new_password: ''
             }}
-            onFinish={console.log}
+            onFinish={run}
           >
             <FormItem
               name="old_passwrod"
@@ -75,7 +77,7 @@ export function ModifyPassword() {
               <InputGroup />
             </FormItem>
 
-            <Button fill type="submit" intent="primary">
+            <Button fill type="submit" intent="primary" loading={loading}>
               Confirm
             </Button>
 
