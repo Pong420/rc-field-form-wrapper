@@ -12,8 +12,8 @@ export interface FormProps<T extends Record<string | number, any>>
 }
 
 type OmititedRcFieldProps = Omit<
-  RcFormProps,
-  'name' | 'dependencies' | 'rules' | 'shouldUpdate' | 'children'
+  RcFieldProps,
+  'name' | 'dependencies' | 'shouldUpdate' | 'children'
 >;
 
 interface BaseFieldProps<T extends {}, K extends PropertyKey = keyof T>
@@ -24,15 +24,6 @@ interface BaseFieldProps<T extends {}, K extends PropertyKey = keyof T>
     | ((value: T) => Array<Validator | null>);
   validateTrigger?: string | string[];
   onReset?(): void;
-}
-
-export interface FormItemClassName {
-  item?: string;
-  label?: string;
-  error?: string;
-  touched?: string;
-  validating?: string;
-  help?: string;
 }
 
 type FieldProps<T extends {}, K extends PropertyKey = keyof T> = BaseFieldProps<
@@ -53,6 +44,15 @@ type FieldProps<T extends {}, K extends PropertyKey = keyof T> = BaseFieldProps<
 export type FormItemProps<T extends Record<string | number, any>> = FieldProps<
   T
 > & { label?: string; noStyle?: boolean };
+
+export interface FormItemClassName {
+  item?: string;
+  label?: string;
+  error?: string;
+  touched?: string;
+  validating?: string;
+  help?: string;
+}
 
 type Rule = NonNullable<RcFieldProps['rules']>[number];
 
@@ -85,7 +85,8 @@ export function createForm<T extends Record<string | number, any>>({
   const FormItem = React.memo<FormItemProps<T>>(props_ => {
     const {
       children,
-      validators,
+      rules = [],
+      validators = [],
       validateTrigger,
       noStyle,
       label,
@@ -101,17 +102,16 @@ export function createForm<T extends Record<string | number, any>>({
 
     const ClassName = { ...defaultFormItemClassName, ...itemClassName };
 
-    const rules: Rule[] = validators
-      ? [
-          ({ getFieldsValue }) => ({
-            validateTrigger,
-            validator:
-              typeof validators === 'function'
-                ? compose(validators(getFieldsValue(deps) as any))
-                : compose(validators)
-          })
-        ]
-      : [];
+    const rules_: Rule[] =
+      typeof validators === 'function'
+        ? [
+            ({ getFieldsValue }) => ({
+              validator: compose(validators(getFieldsValue(deps) as any))
+            })
+          ]
+        : validators.map<Rule>(validator => ({
+            validator: validator ? validator : undefined
+          }));
 
     return React.createElement(
       RcField,
@@ -123,7 +123,8 @@ export function createForm<T extends Record<string | number, any>>({
         const field = React.createElement(
           RcField,
           {
-            rules,
+            rules: [...rules, ...rules_],
+            validateTrigger,
             shouldUpdate: deps && createShouldUpdate(deps),
             ...props
           },
