@@ -1,0 +1,51 @@
+@import '~normalize.css';
+@import '~@blueprintjs/core/lib/css/blueprint.css';
+@import '~@blueprintjs/icons/lib/css/blueprint-icons.css';
+
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+
+html {
+  overflow: hidden;
+}
+
+html,
+body {
+  min-height: 100vh;
+  height: 100%;
+}
+
+body {
+  background-color: $light-gray5;
+  color: $dark-gray5;
+  font-family: 'Muli', #{$pt-font-family};
+  font-size: $pt-font-size;
+  margin: 0;
+  overflow: auto;
+  padding: 0;
+}
+
+img {
+  vertical-align: middle;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+#root {
+  @include flex();
+  @include dimen(100%);
+  min-height: 100%;
+  max-width: 1440px;
+  margin: auto;
+}
+
+.home {
+  @include sq-dimen(100%);
+  @include flex(center, center);
+}
