@@ -17,14 +17,14 @@ Copy the files in `src/form` to your project
 ## Usage
 
 ```tsx
-import { createForm, validators } from '../form';
+import { createForm, validators, FormInstance, FormItemProps } from '../form';
 
 interface Param$Login {
   username: string;
   password: string;
 }
 
-const { Form, FormItem } = createForm<Param$Login>();
+const { Form, FormItem, useForm } = createForm<Param$Login>();
 
 // it is suggested to set initialValues, otherwise you may receive an error when values change
 <Form initialValues={{ username: '', password: '' }} onFinish={console.log}>
@@ -129,7 +129,7 @@ const { Form, FormItem } = createForm({
 ### defaultProps
 
 ```ts
-const { Form, FormItem } = createForm({
+const { Form, FormItem, useForm } = createForm<Schema>({
   // ...formitem props
 });
 ```

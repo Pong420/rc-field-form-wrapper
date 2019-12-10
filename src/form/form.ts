@@ -1,12 +1,40 @@
 import React, { ReactElement } from 'react';
-import RcForm, { Field as RcField, FormInstance } from 'rc-field-form';
+import RcForm, { Field as RcField, useForm as RcUseForm } from 'rc-field-form';
 import { FormProps as RcFormProps } from 'rc-field-form/es/Form';
 import { FieldProps as RcFieldProps } from 'rc-field-form/es/Field';
 import { Validator, compose } from './validators';
-import { FieldData } from 'rc-field-form/lib/interface';
+import {
+  FieldData,
+  FieldError,
+  ValidateFields,
+  Store
+} from 'rc-field-form/lib/interface';
 
-export interface FormProps<T extends Record<string | number, any>>
-  extends Omit<RcFormProps, 'onFinish'> {
+type NamePath<K extends PropertyKey> = K | K[];
+
+export type FormInstance<T extends {} = {}, K extends keyof T = keyof T> = {
+  getFieldValue: (name: NamePath<K>) => T[K];
+  getFieldsValue: (nameList?: NamePath<K>[]) => T;
+  getFieldError: (name: NamePath<K>) => string[];
+  getFieldsError: (nameList?: NamePath<K>[]) => FieldError[];
+  isFieldsTouched(
+    nameList?: NamePath<K>[],
+    allFieldsTouched?: boolean
+  ): boolean;
+  isFieldsTouched(allFieldsTouched?: boolean): boolean;
+  isFieldTouched: (name: NamePath<K>) => boolean;
+  isFieldValidating: (name: NamePath<K>) => boolean;
+  isFieldsValidating: (nameList: NamePath<K>[]) => boolean;
+  resetFields: (fields?: NamePath<K>[]) => void;
+  setFields: (fields: FieldData[]) => void;
+  setFieldsValue: (value: T) => void;
+  validateFields: ValidateFields;
+  submit: () => void;
+};
+
+export interface FormProps<T extends {} = Store>
+  extends Omit<RcFormProps, 'form' | 'onFinish'> {
+  form?: FormInstance<T>;
   initialValues?: Partial<T>;
   onFinish?: (values: T) => void;
 }
@@ -16,7 +44,7 @@ type OmititedRcFieldProps = Omit<
   'name' | 'dependencies' | 'children'
 >;
 
-interface BaseFieldProps<T extends {}, K extends PropertyKey = keyof T>
+interface BaseFieldProps<T extends {}, K extends keyof T = keyof T>
   extends OmititedRcFieldProps {
   name?: K | K[];
   validators?:
@@ -26,7 +54,7 @@ interface BaseFieldProps<T extends {}, K extends PropertyKey = keyof T>
   onReset?(): void;
 }
 
-type FieldProps<T extends {}, K extends PropertyKey = keyof T> = BaseFieldProps<
+type FieldProps<T extends {}, K extends keyof T = keyof T> = BaseFieldProps<
   T,
   K
 > &
@@ -78,7 +106,7 @@ const defaultFormItemClassName: Required<FormItemClassName> = {
   help: 'rc-form-item-help'
 };
 
-export function createForm<T extends Record<string | number, any>>({
+export function createForm<T extends {}>({
   itemClassName,
   ...defaultProps
 }: Partial<FormItemProps<T>> & { itemClassName?: FormItemClassName } = {}) {
@@ -90,7 +118,7 @@ export function createForm<T extends Record<string | number, any>>({
       validateTrigger,
       noStyle,
       label,
-      deps,
+      deps = [],
       ...props
     } = {
       ...defaultProps,
@@ -115,9 +143,12 @@ export function createForm<T extends Record<string | number, any>>({
 
     return React.createElement(
       RcField,
-      { dependencies: [props.name] },
-      (_: any, { touched, validating }: FieldData, form: FormInstance) => {
-        const { getFieldError } = form;
+      {
+        dependencies: [props.name, ...deps],
+        shouldUpdate: createShouldUpdate([props.name, ...deps])
+      },
+      (_: any, { touched, validating }: FieldData, form: FormInstance<T>) => {
+        const { getFieldError, getFieldsValue } = form;
         const errors = getFieldError(props.name);
 
         const field = React.createElement(
@@ -125,14 +156,11 @@ export function createForm<T extends Record<string | number, any>>({
           {
             rules: [...rules, ..._rules],
             validateTrigger,
-            dependencies: deps,
-            shouldUpdate: deps && createShouldUpdate(deps),
             ...props
           },
           typeof children !== 'function'
             ? children
-            : (_: any, __: FieldData, { getFieldsValue }: FormInstance) =>
-                children(getFieldsValue(deps) as any)
+            : children(getFieldsValue(deps))
         );
 
         if (noStyle) {
@@ -144,10 +172,11 @@ export function createForm<T extends Record<string | number, any>>({
           {
             className: [
               ClassName.item,
-              errors && !!errors.length ? ClassName.error : '',
-              touched ? ClassName.touched : '',
-              validating ? ClassName.validating : ''
+              errors && !!errors.length && ClassName.error,
+              touched && ClassName.touched,
+              validating && ClassName.validating
             ]
+              .filter(Boolean)
               .join(' ')
               .trim()
           },
@@ -160,19 +189,27 @@ export function createForm<T extends Record<string | number, any>>({
   });
 
   const Form = React.memo(
-    React.forwardRef<FormInstance, FormProps<T>>(
-      ({ children, onFinish, ...props }, ref) =>
+    React.forwardRef<FormInstance<T>, FormProps<T>>(
+      ({ children, onFinish, ...props }, ref: any) =>
         React.createElement(
           RcForm,
           {
             ...props,
             ref,
-            onFinish: (store: any) => onFinish && onFinish(store)
-          },
+            onFinish
+          } as any,
           children
         )
     )
   );
 
-  return { Form, FormItem };
+  const useForm: (
+    form?: FormInstance<T>
+  ) => [FormInstance<T>] = RcUseForm as any;
+
+  return {
+    Form,
+    FormItem,
+    useForm
+  };
 }
