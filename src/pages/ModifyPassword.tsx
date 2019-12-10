@@ -48,6 +48,7 @@ export function ModifyPassword() {
             <FormItem
               name="new_password"
               label="New Password"
+              deps={['old_passwrod']}
               validators={({ old_passwrod }) => [
                 validators.required('Please input the new password'),
                 validators.minLength(8, 'Password should not less then 8'),
@@ -67,6 +68,7 @@ export function ModifyPassword() {
             <FormItem
               name="confirm_new_password"
               label="Confirm New Password"
+              deps={['new_password']}
               validators={({ new_password }) => [
                 validators.required('Please input password'),
                 validators.shouldBeEqual(

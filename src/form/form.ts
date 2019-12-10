@@ -47,6 +47,8 @@ type OmititedRcFieldProps = Omit<
 interface BaseFieldProps<T extends {}, K extends keyof T = keyof T>
   extends OmititedRcFieldProps {
   name?: K | K[];
+  deps?: K[];
+  children: ReactElement | ((value: T) => ReactElement);
   validators?:
     | Array<Validator | null>
     | ((value: T) => Array<Validator | null>);
@@ -54,24 +56,10 @@ interface BaseFieldProps<T extends {}, K extends keyof T = keyof T>
   onReset?(): void;
 }
 
-type FieldProps<T extends {}, K extends keyof T = keyof T> = BaseFieldProps<
-  T,
-  K
-> &
-  (
-    | {
-        deps?: K[];
-        children: ReactElement;
-      }
-    | {
-        deps: K[];
-        children: (value: T) => ReactElement;
-      }
-  );
-
-export type FormItemProps<T extends Record<string | number, any>> = FieldProps<
-  T
-> & { label?: string; noStyle?: boolean };
+export type FormItemProps<T extends {}> = BaseFieldProps<T> & {
+  label?: string;
+  noStyle?: boolean;
+};
 
 export interface FormItemClassName {
   item?: string;
@@ -140,6 +128,15 @@ export function createForm<T extends {}>({
         : validators.map<Rule>(validator => ({
             validator: validator ? validator : undefined
           }));
+
+    if (
+      (typeof children === 'function' || typeof validators === 'function') &&
+      deps.length === 0
+    ) {
+      throw new Error(
+        'props `deps` is required  if children or validators is a function'
+      );
+    }
 
     return React.createElement(
       RcField,
