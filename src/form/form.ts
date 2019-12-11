@@ -10,6 +10,8 @@ import {
   Store
 } from 'rc-field-form/lib/interface';
 
+export type ValueOf<T> = T[keyof T];
+
 type NamePath<K extends PropertyKey> = K | K[];
 
 export type FormInstance<T extends {} = {}, K extends keyof T = keyof T> = {
@@ -44,22 +46,39 @@ type OmititedRcFieldProps = Omit<
   'name' | 'dependencies' | 'children'
 >;
 
-interface BaseFieldProps<T extends {}, K extends keyof T = keyof T>
+interface BasicFormItemProps<T extends {}, K extends keyof T = keyof T>
   extends OmititedRcFieldProps {
   name?: K | K[];
-  deps?: K[];
-  children: ReactElement | ((value: T) => ReactElement);
+  children?: ReactElement | ((value: T) => ReactElement);
   validators?:
     | Array<Validator | null>
     | ((value: T) => Array<Validator | null>);
   validateTrigger?: string | string[];
   onReset?(): void;
-}
-
-export type FormItemProps<T extends {}> = BaseFieldProps<T> & {
   label?: string;
   noStyle?: boolean;
+}
+
+type FormItemPropsDeps<T extends {}, K extends keyof T = keyof T> = {
+  basic: {
+    deps?: K[];
+    children?: ReactElement;
+    validators?: Array<Validator | null>;
+  };
+  case1: {
+    deps: K[];
+    validators: (value: T) => Array<Validator | null>;
+  };
+  case2: {
+    deps: K[];
+    children: (value: T) => ReactElement;
+  };
 };
+
+export type FormItemProps<
+  T extends {},
+  K extends keyof T = keyof T
+> = BasicFormItemProps<T, K> & ValueOf<FormItemPropsDeps<T, K>>;
 
 export interface FormItemClassName {
   item?: string;
@@ -128,15 +147,6 @@ export function createForm<T extends {}>({
         : validators.map<Rule>(validator => ({
             validator: validator ? validator : undefined
           }));
-
-    if (
-      (typeof children === 'function' || typeof validators === 'function') &&
-      deps.length === 0
-    ) {
-      throw new Error(
-        'props `deps` is required  if children or validators is a function'
-      );
-    }
 
     return React.createElement(
       RcField,
