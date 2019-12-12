@@ -78,7 +78,7 @@ type FormItemPropsDeps<T extends {}, K extends keyof T = keyof T> = {
 export type FormItemProps<
   T extends {},
   K extends keyof T = keyof T
-> = BasicFormItemProps<T, K> & ValueOf<FormItemPropsDeps<T, K>>;
+> = BasicFormItemProps<T, K> & (ValueOf<FormItemPropsDeps<T, K>>);
 
 export interface FormItemClassName {
   item?: string;
@@ -189,7 +189,7 @@ export function createForm<T extends {}>({
           },
           React.createElement('label', { className: ClassName.label }, label),
           field,
-          React.createElement('div', { className: ClassName.help }, errors)
+          React.createElement('div', { className: ClassName.help }, errors[0])
         );
       }
     );
