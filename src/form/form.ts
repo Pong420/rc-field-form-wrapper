@@ -1,4 +1,6 @@
-import React, { ReactElement } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import React, { ReactElement, ReactNode } from 'react';
 import RcForm, { Field as RcField, useForm as RcUseForm } from 'rc-field-form';
 import { FormProps as RcFormProps } from 'rc-field-form/es/Form';
 import { FieldProps as RcFieldProps } from 'rc-field-form/es/Field';
@@ -55,8 +57,9 @@ interface BasicFormItemProps<T extends {}, K extends keyof T = keyof T>
     | ((value: T) => Array<Validator | null>);
   validateTrigger?: string | string[];
   onReset?(): void;
-  label?: string;
+  label?: ReactNode;
   noStyle?: boolean;
+  className?: string;
 }
 
 type FormItemPropsDeps<T extends {}, K extends keyof T = keyof T> = {
@@ -78,7 +81,7 @@ type FormItemPropsDeps<T extends {}, K extends keyof T = keyof T> = {
 export type FormItemProps<
   T extends {},
   K extends keyof T = keyof T
-> = BasicFormItemProps<T, K> & (ValueOf<FormItemPropsDeps<T, K>>);
+> = BasicFormItemProps<T, K> & ValueOf<FormItemPropsDeps<T, K>>;
 
 export interface FormItemClassName {
   item?: string;
@@ -126,6 +129,7 @@ export function createForm<T extends {}>({
       noStyle,
       label,
       deps = [],
+      className = '',
       ...props
     } = {
       ...defaultProps,
@@ -178,6 +182,7 @@ export function createForm<T extends {}>({
           'div',
           {
             className: [
+              className,
               ClassName.item,
               errors && !!errors.length && ClassName.error,
               touched && ClassName.touched,
