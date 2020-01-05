@@ -6,8 +6,7 @@ Wrapper of [react-component/field-form](https://github.com/react-component/field
 
 - Stronger Type Checking
   - initialValues, onFinish, name, deps
-- Label and error text handled
-- Easier options
+- Label and error text
 - Validators
 
 ## Install
@@ -44,29 +43,29 @@ const { Form, FormItem, useForm } = createForm<Param$Login>();
 
 [Demo](https://rc-field-form.herokuapp.com/)
 
-## Changed API
+## API Difference
 
 ## Form
 
-| Prop          | Changes                |
-| ------------- | ---------------------- |
-| initialValues | Better type defination |
-| onFinish      | Better type defination |
+| Prop          | Changes                  |
+| ------------- | ------------------------ |
+| initialValues | Better type intelligence |
+| onFinish      | Better type intelligence |
 
 ## FormItem (Field)
 
-| Prop         | Changes                                                           | Type                                   |
-| ------------ | ----------------------------------------------------------------- | -------------------------------------- |
-| dependencies | Reaplced by `deps`                                                | ---                                    |
-| deps         | Same as dependencies, better type defination                      | string[]                               |
-| validators   | Similar to `rules` validator                                      | Validator[] \| (values) => Validator[] |
-| shouldUpdate | If `deps` added, it will assign `shouldUpdate` prop automatically |
-| label        | Form label                                                        | string                                 |
-| noStyle      | used as a pure field control                                      | boolean                                |
+| Prop         | Changes                                                                                  | Type                                   |
+| ------------ | ---------------------------------------------------------------------------------------- | -------------------------------------- |
+| dependencies | Replaced by `deps`                                                                       | ---                                    |
+| deps         | Same as dependencies, but better type intelligence                                       | string[]                               |
+| validators   | Similar to `rules` validator                                                             | Validator[] \| (values) => Validator[] |
+| shouldUpdate | You may not need this props. If `deps` is assigned, this props will create automatically |
+| label        | Form label                                                                               | string                                 |
+| noStyle      | used as a pure field control (label/error will not be renreder)                          | boolean                                |
 
 ## Recipes
 
-### validators
+### validation
 
 - Validator is a function return Promise, and reject an string if incorrect. more details see [src/form/validators.ts](./src/form/validators.ts)
 
@@ -127,6 +126,8 @@ const { Form, FormItem } = createForm({
 ```
 
 ### defaultProps
+
+You can set default props for all `FormItem`
 
 ```ts
 const { Form, FormItem, useForm } = createForm<Schema>({
