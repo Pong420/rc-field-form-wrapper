@@ -63,26 +63,26 @@ interface BasicFormItemProps<T extends {}, K extends keyof T = keyof T>
   className?: string;
 }
 
-type FormItemPropsDeps<T extends {}, K extends keyof T = keyof T> = {
-  basic: {
+type FormItemPropsDeps<T extends {}, K extends keyof T = keyof T> = [
+  {
     deps?: K[];
     children?: ReactElement;
     validators?: Array<Validator | null>;
-  };
-  case1: {
+  },
+  {
     deps: K[];
     validators: (value: T) => Array<Validator | null>;
-  };
-  case2: {
+  },
+  {
     deps: K[];
     children: (value: T) => ReactElement;
-  };
-};
+  }
+];
 
 export type FormItemProps<
   T extends {},
   K extends keyof T = keyof T
-> = BasicFormItemProps<T, K> & ValueOf<FormItemPropsDeps<T, K>>;
+> = BasicFormItemProps<T, K> & FormItemPropsDeps<T, K>[number];
 
 export interface FormItemClassName {
   item?: string;
@@ -203,16 +203,8 @@ export function createForm<T extends {}>({
 
   const Form = React.memo(
     React.forwardRef<FormInstance<T>, FormProps<T>>(
-      ({ children, onFinish, ...props }, ref: any) =>
-        React.createElement(
-          RcForm,
-          {
-            ...props,
-            ref,
-            onFinish
-          } as any,
-          children
-        )
+      ({ children, ...props }, ref) =>
+        React.createElement(RcForm, { ...props, ref } as any, children)
     )
   );
 
