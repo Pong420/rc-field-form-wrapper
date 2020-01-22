@@ -124,9 +124,7 @@ export function createForm<T extends {}>({
   const FormItem = React.memo<FormItemProps<T>>(props_ => {
     const {
       children,
-      rules = [],
       validators = [],
-      validateTrigger,
       noStyle,
       label,
       deps = [],
@@ -142,16 +140,14 @@ export function createForm<T extends {}>({
 
     const ClassName = { ...defaultFormItemClassName, ...itemClassName };
 
-    const _rules: Rule[] =
+    const rules: Rule[] =
       typeof validators === 'function'
         ? [
             ({ getFieldsValue }) => ({
               validator: compose(validators(getFieldsValue(deps) as any))
             })
           ]
-        : validators.map<Rule>(validator => ({
-            validator: validator ? validator : undefined
-          }));
+        : [{ validator: compose(validators) }];
 
     return React.createElement(
       RcField,
@@ -159,17 +155,16 @@ export function createForm<T extends {}>({
         dependencies: [props.name, ...deps],
         shouldUpdate: createShouldUpdate([props.name, ...deps])
       },
-      (_: any, { touched, validating }: FieldData, form: FormInstance<T>) => {
-        const { getFieldError, getFieldsValue } = form;
+      (
+        _values: { [name: string]: any },
+        { touched, validating }: FieldData,
+        { getFieldError, getFieldsValue }: FormInstance<T>
+      ) => {
         const errors = getFieldError(props.name);
 
         const field = React.createElement(
           RcField,
-          {
-            rules: [...rules, ..._rules],
-            validateTrigger,
-            ...props
-          },
+          { rules, ...props },
           typeof children !== 'function'
             ? children
             : children(getFieldsValue(deps))

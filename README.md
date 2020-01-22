@@ -4,10 +4,10 @@ Wrapper of [react-component/field-form](https://github.com/react-component/field
 
 ## Features
 
-- Stronger Type Checking
-  - initialValues, onFinish, name, deps
-- Label and error text
+- Stronger Type Checking on
+  - initialValues, onFinish, name, deps ...
 - Validators
+- Label and error text ( you will need to customize the style yourself )
 
 ## Install
 
@@ -59,7 +59,7 @@ const { Form, FormItem, useForm } = createForm<Param$Login>();
 | dependencies | Replaced by `deps`                                                                       | ---                                    |
 | deps         | Same as dependencies, but better type intelligence                                       | string[]                               |
 | validators   | Similar to `rules` validator                                                             | Validator[] \| (values) => Validator[] |
-| shouldUpdate | You may not need this props. If `deps` is assigned, this props will create automatically |
+| shouldUpdate | You may not need this props. If `deps` is assigned, this props will create automatically | ---                                    |
 | label        | Form label                                                                               | string                                 |
 | noStyle      | used as a pure field control (label/error will not be renreder)                          | boolean                                |
 
@@ -67,7 +67,7 @@ const { Form, FormItem, useForm } = createForm<Param$Login>();
 
 ### validation
 
-- Validator is a function return Promise, and reject an string if incorrect. more details see [src/form/validators.ts](./src/form/validators.ts)
+- Validator is a function return Promise, and reject a string if incorrect. For more details see [src/form/validators.ts](./src/form/validators.ts)
 
 ```ts
 import { Validator, HigherOrderValidator } from '../form';
