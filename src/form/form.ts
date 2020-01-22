@@ -37,10 +37,11 @@ export type FormInstance<T extends {} = {}, K extends keyof T = keyof T> = {
 };
 
 export interface FormProps<T extends {} = Store>
-  extends Omit<RcFormProps, 'form' | 'onFinish'> {
+  extends Omit<RcFormProps, 'form' | 'onFinish' | 'ref'> {
   form?: FormInstance<T>;
   initialValues?: Partial<T>;
   onFinish?: (values: T) => void;
+  ref?: React.Ref<FormInstance<T>>;
 }
 
 type OmititedRcFieldProps = Omit<
