@@ -17,17 +17,17 @@ export const compose = (validators: Array<Validator | null>): Validator => {
 };
 
 export const required: HigherOrderValidator = (msg: string) => (_, value) => {
-  const val = typeof value === "string" ? value.trim() : value;
+  const val = typeof value === 'string' ? value.trim() : value;
   const valid = !!(Array.isArray(val)
     ? val.length
-    : !(typeof val === "undefined" || val === null || val === ""));
+    : !(typeof val === 'undefined' || val === null || val === ''));
   return valid ? Promise.resolve() : Promise.reject(msg);
 };
 
 export const number: Validator = (_, value) =>
-  /^[0-9]/.test(value)
+  /^-?\d*\.?\d*$/.test(value)
     ? Promise.resolve()
-    : Promise.reject("Plase input number only");
+    : Promise.reject('Plase input number only');
 
 export const integer: HigherOrderValidator = (msg: string) => (_, value) =>
   /^[0-9]+\d*$/.test(value) ? Promise.resolve() : Promise.reject(msg);
@@ -51,7 +51,7 @@ const lengthComparation = (
   callback: (length: number, flag: number) => boolean
 ) => (flag: number, msg: string) => {
   const validator: Validator = (_, value) => {
-    if (Array.isArray(value) || typeof value === "string") {
+    if (Array.isArray(value) || typeof value === 'string') {
       return callback(value.length, flag)
         ? Promise.resolve()
         : Promise.reject(msg);
