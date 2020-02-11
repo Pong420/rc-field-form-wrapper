@@ -2,6 +2,8 @@
 
 Wrapper of [react-component/field-form](https://github.com/react-component/field-form), inspired by [Antd 4.0 Form Component](https://next.ant.design/components/form/?locale=en-US#header)
 
+:warning: Before using this, you should have basic understanding of above libarary
+
 ## Features
 
 - Stronger Type Checking on
@@ -47,10 +49,12 @@ const { Form, FormItem, useForm } = createForm<Param$Login>();
 
 ## Form
 
-| Prop          | Changes                  |
-| ------------- | ------------------------ |
-| initialValues | Better type intelligence |
-| onFinish      | Better type intelligence |
+| Prop                    | Changes                                                                              |
+| ----------------------- | ------------------------------------------------------------------------------------ |
+| initialValues           | Better type intelligence                                                             |
+| onFinish                | Better type intelligence                                                             |
+| beforeSubmit            | (store: Store) => Values, transform `form values` before pass to `onFinish` callback |
+| transoformInitialValues | (store: Values) => Store, transform `initialValues` before initialize                |
 
 ## FormItem (Field)
 
@@ -130,7 +134,41 @@ const { Form, FormItem } = createForm({
 You can set default props for all `FormItem`
 
 ```ts
+const span = 6;
 const { Form, FormItem, useForm } = createForm<Schema>({
-  // ...formitem props
+  labelCol: { span },
+  wrapperCol: { span: 24 - span }
 });
+```
+
+### Tranform form values befoe initialize or submit
+
+```tsx
+interface Store {
+  a: number;
+  b: number;
+}
+
+interface Values {
+  tuple: [number, number];
+}
+
+const { Form, FormItem, useForm } = createForm<Store, Values>();
+
+function beforeSubmit({ tuple }: Partial<Values>): Partial<Store> {
+  return {
+    a: tuple[0],
+    b: tuple[1]
+  };
+}
+
+function transoformInitialValues({ a, b }: Store): Values {
+  return {
+    tuple: [a, b]
+  };
+}
+
+function FormComponent() {
+  return <Form></Form>;
+}
 ```

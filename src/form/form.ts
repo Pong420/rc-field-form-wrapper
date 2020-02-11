@@ -4,85 +4,82 @@ import React, { ReactElement, ReactNode } from 'react';
 import RcForm, { Field as RcField, useForm as RcUseForm } from 'rc-field-form';
 import { FormProps as RcFormProps } from 'rc-field-form/es/Form';
 import { FieldProps as RcFieldProps } from 'rc-field-form/es/Field';
-import { Validator, compose } from './validators';
 import {
   FieldData,
   FieldError,
   ValidateFields,
   Store
 } from 'rc-field-form/lib/interface';
+import { Validator, compose as composeValidator } from './validators';
+import { NamePath } from './typings';
 
-export type ValueOf<T> = T[keyof T];
-
-type NamePath<K extends PropertyKey> = K | K[];
-
-export type FormInstance<T extends {} = {}, K extends keyof T = keyof T> = {
-  getFieldValue: (name: NamePath<K>) => T[K];
-  getFieldsValue: (nameList?: NamePath<K>[]) => T;
-  getFieldError: (name: NamePath<K>) => string[];
-  getFieldsError: (nameList?: NamePath<K>[]) => FieldError[];
+export type FormInstance<S extends {} = Store, K extends keyof S = keyof S> = {
+  getFieldValue: (name: NamePath<S>) => S[K];
+  getFieldsValue: (nameList?: NamePath<S>[]) => S;
+  getFieldError: (name: NamePath<S>) => string[];
+  getFieldsError: (nameList?: NamePath<S>[]) => FieldError[];
   isFieldsTouched(
-    nameList?: NamePath<K>[],
+    nameList?: NamePath<S>[],
     allFieldsTouched?: boolean
   ): boolean;
   isFieldsTouched(allFieldsTouched?: boolean): boolean;
-  isFieldTouched: (name: NamePath<K>) => boolean;
-  isFieldValidating: (name: NamePath<K>) => boolean;
-  isFieldsValidating: (nameList: NamePath<K>[]) => boolean;
-  resetFields: (fields?: NamePath<K>[]) => void;
+  isFieldTouched: (name: NamePath<S>) => boolean;
+  isFieldValidating: (name: NamePath<S>) => boolean;
+  isFieldsValidating: (nameList: NamePath<S>[]) => boolean;
+  resetFields: (fields?: NamePath<S>[]) => void;
   setFields: (fields: FieldData[]) => void;
-  setFieldsValue: (value: T) => void;
+  setFieldsValue: (value: S) => void;
   validateFields: ValidateFields;
   submit: () => void;
 };
 
-export interface FormProps<T extends {} = Store>
-  extends Omit<RcFormProps, 'form' | 'onFinish' | 'ref'> {
-  form?: FormInstance<T>;
-  initialValues?: Partial<T>;
-  onFinish?: (values: T) => void;
-  ref?: React.Ref<FormInstance<T>>;
+export interface FormProps<S extends {} = Store, V = S>
+  extends Omit<RcFormProps, 'form' | 'onFinish' | 'onValuesChange'> {
+  form?: FormInstance<S>;
+  initialValues?: Partial<V>;
+  onFinish?: (values: V) => void;
+  onValuesChange?: (changes: Partial<S>, values: S) => void;
+  transoformInitialValues?: (payload: Partial<V>) => Partial<S>;
+  beforeSubmit?: (payload: S) => V;
 }
 
 type OmititedRcFieldProps = Omit<
   RcFieldProps,
-  'name' | 'dependencies' | 'children'
+  'name' | 'dependencies' | 'children' | 'rules'
 >;
 
-interface BasicFormItemProps<T extends {}, K extends keyof T = keyof T>
+interface BasicFormItemProps<S extends {} = Store>
   extends OmititedRcFieldProps {
-  name?: K | K[];
-  children?: ReactElement | ((value: T) => ReactElement);
+  name?: NamePath<S>;
+  children?: ReactElement | ((value: S) => ReactElement);
   validators?:
     | Array<Validator | null>
-    | ((value: T) => Array<Validator | null>);
-  validateTrigger?: string | string[];
+    | ((value: S) => Array<Validator | null>);
   onReset?(): void;
   label?: ReactNode;
   noStyle?: boolean;
   className?: string;
 }
 
-type FormItemPropsDeps<T extends {}, K extends keyof T = keyof T> = [
-  {
-    deps?: K[];
-    children?: ReactElement;
-    validators?: Array<Validator | null>;
-  },
-  {
-    deps: K[];
-    validators: (value: T) => Array<Validator | null>;
-  },
-  {
-    deps: K[];
-    children: (value: T) => ReactElement;
-  }
-];
+type FormItemPropsDeps<S extends {} = Store, K extends keyof S = keyof S> =
+  | {
+      deps?: K[];
+      children?: ReactElement;
+      validators?: Array<Validator | null>;
+    }
+  | {
+      deps: K[];
+      validators: (value: S) => Array<Validator | null>;
+    }
+  | {
+      deps: K[];
+      children: (value: S) => ReactElement;
+    };
 
 export type FormItemProps<
-  T extends {},
-  K extends keyof T = keyof T
-> = BasicFormItemProps<T, K> & FormItemPropsDeps<T, K>[number];
+  S extends {} = Store,
+  K extends keyof S = keyof S
+> = BasicFormItemProps<S> & FormItemPropsDeps<S, K>;
 
 export interface FormItemClassName {
   item?: string;
@@ -117,11 +114,11 @@ const defaultFormItemClassName: Required<FormItemClassName> = {
   help: 'rc-form-item-help'
 };
 
-export function createForm<T extends {}>({
+export function createForm<S extends {} = Store, V = S>({
   itemClassName,
   ...defaultProps
-}: Partial<FormItemProps<T>> & { itemClassName?: FormItemClassName } = {}) {
-  const FormItem = React.memo<FormItemProps<T>>(props_ => {
+}: Partial<FormItemProps<S>> & { itemClassName?: FormItemClassName } = {}) {
+  const FormItem = (props_: FormItemProps<S>) => {
     const {
       children,
       validators = [],
@@ -133,7 +130,7 @@ export function createForm<T extends {}>({
     } = {
       ...defaultProps,
       ...props_
-    } as FormItemProps<T> & {
+    } as FormItemProps<S> & {
       deps?: Array<string | number>;
       name: string | number;
     };
@@ -144,27 +141,29 @@ export function createForm<T extends {}>({
       typeof validators === 'function'
         ? [
             ({ getFieldsValue }) => ({
-              validator: compose(validators(getFieldsValue(deps) as any))
+              validator: composeValidator(
+                validators(getFieldsValue(deps) as any)
+              )
             })
           ]
-        : [{ validator: compose(validators) }];
+        : [{ validator: composeValidator(validators) }];
 
     return React.createElement(
       RcField,
       {
-        dependencies: [props.name, ...deps],
-        shouldUpdate: createShouldUpdate([props.name, ...deps])
+        dependencies: deps,
+        shouldUpdate: createShouldUpdate(deps)
       },
-      (
-        _values: { [name: string]: any },
-        { touched, validating }: FieldData,
-        { getFieldError, getFieldsValue }: FormInstance<T>
-      ) => {
+      (_: any, { touched, validating }: FieldData, form: FormInstance<S>) => {
+        const { getFieldError, getFieldsValue } = form;
         const errors = getFieldError(props.name);
 
         const field = React.createElement(
           RcField,
-          { rules, ...props },
+          {
+            rules,
+            ...props
+          },
           typeof children !== 'function'
             ? children
             : children(getFieldsValue(deps))
@@ -194,22 +193,48 @@ export function createForm<T extends {}>({
         );
       }
     );
-  });
+  };
 
-  const Form = React.memo(
-    React.forwardRef<FormInstance<T>, FormProps<T>>(
-      ({ children, ...props }, ref) =>
-        React.createElement(RcForm, { ...props, ref } as any, children)
-    )
+  const Form = React.forwardRef<FormInstance<S>, FormProps<S>>(
+    (
+      {
+        children,
+        onFinish,
+        beforeSubmit,
+        initialValues,
+        transoformInitialValues,
+        ...props
+      },
+      ref: any
+    ) =>
+      React.createElement(
+        RcForm,
+        {
+          ...props,
+          ref,
+          initialValues:
+            initialValues && transoformInitialValues
+              ? transoformInitialValues(initialValues)
+              : initialValues,
+          onFinish:
+            onFinish &&
+            ((store: any) => {
+              onFinish(beforeSubmit ? beforeSubmit(store) : store);
+            })
+        } as any,
+        children
+      )
   );
 
   const useForm: (
-    form?: FormInstance<T>
-  ) => [FormInstance<T>] = RcUseForm as any;
+    form?: FormInstance<S>
+  ) => [FormInstance<S>] = RcUseForm as any;
 
   return {
     Form,
     FormItem,
+    List: RcForm.List,
+    Provider: RcForm.FormProvider,
     useForm
   };
 }
