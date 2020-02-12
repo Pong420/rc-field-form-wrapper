@@ -4,12 +4,7 @@ import React, { ReactElement, ReactNode } from 'react';
 import RcForm, { Field as RcField, useForm as RcUseForm } from 'rc-field-form';
 import { FormProps as RcFormProps } from 'rc-field-form/es/Form';
 import { FieldProps as RcFieldProps } from 'rc-field-form/es/Field';
-import {
-  FieldData,
-  FieldError,
-  ValidateFields,
-  Store
-} from 'rc-field-form/lib/interface';
+import { FieldData, FieldError, Store } from 'rc-field-form/lib/interface';
 import { Validator, compose as composeValidator } from './validators';
 import { NamePath } from './typings';
 
@@ -28,8 +23,8 @@ export type FormInstance<S extends {} = Store, K extends keyof S = keyof S> = {
   isFieldsValidating: (nameList: NamePath<S>[]) => boolean;
   resetFields: (fields?: NamePath<S>[]) => void;
   setFields: (fields: FieldData[]) => void;
-  setFieldsValue: (value: S) => void;
-  validateFields: ValidateFields;
+  setFieldsValue: (value: Partial<S>) => void;
+  validateFields: (nameList?: NamePath<K>[]) => Promise<S>;
   submit: () => void;
 };
 

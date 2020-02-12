@@ -13,19 +13,25 @@ export type FilterNamePath<Base> = {
   [Key in keyof Base]: Base[Key] extends any[]
     ?
         | [Key, number]
-        | (FilterNamePath<Base[Key]>[number] extends any[]
-            ? [
+        | (FilterNamePath<Base[Key]>[number] extends never
+            ? never
+            : [
                 Key,
                 FilterNamePath<Base[Key]>[number][0],
                 FilterNamePath<Base[Key]>[number][1]
-              ]
-            : never)
+              ])
     : Base[Key] extends object
     ?
         | [Key, AllowNames<Base[Key], string | number>]
         | (AllowNamePath<Base[Key]>[number] extends never
             ? never
-            : [Key, AllowNamePath<Base[Key]>[0], AllowNamePath<Base[Key]>[1]])
+            :
+                | [Key, AllowNamePath<Base[Key]>[0]]
+                | [
+                    Key,
+                    AllowNamePath<Base[Key]>[0],
+                    AllowNamePath<Base[Key]>[1]
+                  ])
     : never;
 };
 
