@@ -13,7 +13,10 @@ Wrapper of [react-component/field-form](https://github.com/react-component/field
 
 ## Install
 
-Copy the files in `src/form` to your project
+if you are using `Ant Design`, just replace src/form/form.ts, by `src/form/form.antd.ts`.
+if not, remove `src/form/form.antd.ts`.
+
+then copy the files in `src/form` to your project.
 
 ## Usage
 
@@ -43,7 +46,7 @@ const { Form, FormItem, useForm } = createForm<Param$Login>();
 </Form>;
 ```
 
-[Demo](https://rc-field-form.herokuapp.com/)
+[Demo](https://rc-field-form.herokuapp.com/) ( using [blueprintjs](https://blueprintjs.com/docs/#blueprint) )
 
 ## API Difference
 
