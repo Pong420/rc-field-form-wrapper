@@ -1,14 +1,13 @@
 import React, { ReactElement } from 'react';
-import AntdForm from 'antd/es/form';
-import { FieldData, FieldError, Store } from 'rc-field-form/lib/interface';
-import {
+import AntdForm, {
   FormProps as AntdFormProps,
-  FormItemProps as AntdFormItemProps,
-  ShouldUpdate,
-  Rule
-} from '../../typings';
+  FormItemProps as AntdFormItemProps
+} from 'antd/es/form';
+import { FieldData, FieldError, Store } from 'rc-field-form/lib/interface';
 import { Validator, compose as composeValidator } from './validators';
 import { NamePath } from './typings';
+
+type Rule = NonNullable<AntdFormItemProps['rules']>[number];
 
 export type FormInstance<S extends {} = Store, K extends keyof S = keyof S> = {
   getFieldValue: (name: NamePath<S>) => S[K];
@@ -78,7 +77,7 @@ export type FormItemProps<
 
 export function createShouldUpdate<FieldName extends string | number>(
   names: FieldName[]
-): ShouldUpdate {
+): AntdFormItemProps['shouldUpdate'] {
   return (prev, curr) => {
     for (const name of names) {
       if (prev[name] !== curr[name]) {

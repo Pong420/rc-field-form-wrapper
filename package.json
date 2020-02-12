@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@blueprintjs/core": "^3.22.3",
+    "antd": "^4.0.0-rc.4",
     "express": "^4.17.1",
     "rc-field-form": "^0.0.0-alpha.30",
     "react": "^16.12.0",
@@ -66,7 +67,11 @@
     }
   },
   "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
     "development": [
       "last 1 chrome version",
       "last 1 firefox version",
