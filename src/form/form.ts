@@ -228,8 +228,8 @@ export function createForm<S extends {} = Store, V = S>({
   return {
     Form,
     FormItem,
-    List: RcForm.List,
-    Provider: RcForm.FormProvider,
+    FormList: RcForm.List,
+    FormProvider: RcForm.FormProvider,
     useForm
   };
 }

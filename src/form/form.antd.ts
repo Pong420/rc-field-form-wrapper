@@ -167,8 +167,8 @@ export function createForm<S extends {} = Store, V = S>(
   return {
     Form,
     FormItem,
-    List: AntdForm.List,
-    Provider: AntdForm.Provider,
+    FormList: AntdForm.List,
+    FormProvider: AntdForm.Provider,
     useForm
   };
 }
