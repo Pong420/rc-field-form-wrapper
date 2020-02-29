@@ -10,7 +10,7 @@ import { NamePath } from './typings';
 type Rule = NonNullable<AntdFormItemProps['rules']>[number];
 
 export type FormInstance<S extends {} = Store, K extends keyof S = keyof S> = {
-  getFieldValue: (name: NamePath<S>) => S[K];
+  getFieldValue: <T extends NamePath<S>>(name: T) => T extends K ? S[T] : any;
   getFieldsValue: (nameList?: NamePath<S>[]) => S;
   getFieldError: (name: NamePath<S>) => string[];
   getFieldsError: (nameList?: NamePath<S>[]) => FieldError[];
@@ -27,7 +27,7 @@ export type FormInstance<S extends {} = Store, K extends keyof S = keyof S> = {
   setFieldsValue: (value: Partial<S>) => void;
   validateFields: (nameList?: NamePath<K>[]) => Promise<S>;
   submit: () => void;
-  scrollToField: (name: string | number | NamePath<K>) => void;
+  scrollToField: (name: NamePath<S>) => void;
 };
 
 export interface FormProps<S extends {} = Store, V = S>
@@ -46,7 +46,7 @@ type OmititedAntdFormItemProps = Omit<
   'name' | 'dependencies' | 'children' | 'rules'
 >;
 
-interface BasicFormItemProps<S extends {} = Store, K extends keyof S = keyof S>
+interface BasicFormItemProps<S extends {} = Store>
   extends OmititedAntdFormItemProps {
   name?: NamePath<S>;
   children?: ReactElement | ((value: S) => ReactElement);
@@ -73,7 +73,7 @@ type FormItemPropsDeps<S extends {} = Store, K extends keyof S = keyof S> =
 export type FormItemProps<
   S extends {} = Store,
   K extends keyof S = keyof S
-> = BasicFormItemProps<S, K> & FormItemPropsDeps<S, K>;
+> = BasicFormItemProps<S> & FormItemPropsDeps<S, K>;
 
 export function createShouldUpdate<FieldName extends string | number>(
   names: FieldName[]
@@ -124,7 +124,7 @@ export function createForm<S extends {} = Store, V = S>(
       },
       typeof children === 'function'
         ? ({ getFieldsValue }: FormInstance<S>) =>
-            children(getFieldsValue(deps) as any)
+            children(getFieldsValue(deps))
         : children
     );
   };
@@ -145,6 +145,7 @@ export function createForm<S extends {} = Store, V = S>(
         AntdForm,
         {
           ...props,
+          ref,
           initialValues:
             initialValues && transoformInitialValues
               ? transoformInitialValues(initialValues)
@@ -153,8 +154,7 @@ export function createForm<S extends {} = Store, V = S>(
             onFinish &&
             ((store: any) => {
               onFinish(beforeSubmit ? beforeSubmit(store) : store);
-            }),
-          ref
+            })
         } as any,
         children
       )
