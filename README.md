@@ -13,10 +13,13 @@ Wrapper of [react-component/field-form](https://github.com/react-component/field
 
 ## Install
 
-if you are using `Ant Design`, just replace src/form/form.ts, by `src/form/form.antd.ts`.
-if not, remove `src/form/form.antd.ts`.
+```
+yarn add rc-field-form
+```
 
-then copy the files in `src/form` to your project.
+Then copy the files in `src/form` to your project <br/>
+if you are using `Ant Design`, `form.ts` with `form.antd.ts`. <br/>
+if not, ignore `form.antd.ts`.
 
 ## Usage
 
@@ -52,7 +55,7 @@ const { Form, FormItem, useForm } = createForm<Param$Login>();
 
 ## Form
 
-| Prop                    | Changes                                                                              |
+| Props                   | Changes                                                                              |
 | ----------------------- | ------------------------------------------------------------------------------------ |
 | initialValues           | Better type intelligence                                                             |
 | onFinish                | Better type intelligence                                                             |
@@ -61,14 +64,14 @@ const { Form, FormItem, useForm } = createForm<Param$Login>();
 
 ## FormItem (Field)
 
-| Prop         | Changes                                                                                  | Type                                   |
-| ------------ | ---------------------------------------------------------------------------------------- | -------------------------------------- |
-| dependencies | Replaced by `deps`                                                                       | ---                                    |
-| deps         | Same as dependencies, but better type intelligence                                       | string[]                               |
-| validators   | Similar to `rules` validator                                                             | Validator[] \| (values) => Validator[] |
-| shouldUpdate | You may not need this props. If `deps` is assigned, this props will create automatically | ---                                    |
-| label        | Form label                                                                               | string                                 |
-| noStyle      | used as a pure field control (label/error will not be renreder)                          | boolean                                |
+| Props        | Changes                                                                                   | Type                                   |
+| ------------ | ----------------------------------------------------------------------------------------- | -------------------------------------- |
+| dependencies | Replaced by `deps`                                                                        | ---                                    |
+| deps         | Same as dependencies, but better type intelligence                                        | string[]                               |
+| validators   | Similar to `rules` validator                                                              | Validator[] \| (values) => Validator[] |
+| shouldUpdate | You will not need this props. If `deps` is assigned, this props will create automatically | ---                                    |
+| label        | Form label                                                                                | string                                 |
+| noStyle      | used as a pure field control (label/error will not be renreder)                           | boolean                                |
 
 ## Recipes
 
@@ -86,7 +89,7 @@ const customValidator: Validator = (rule, value) => {
 };
 ```
 
-- `validators` can be a function that return array of validator, it is useful if the validation rely on other field's value. For example validation of new password
+- `validators` can be a function that return array of validator. It is useful if the validation rely on other field's value. For example validation of new password
 
 ```tsx
 <FormItem
