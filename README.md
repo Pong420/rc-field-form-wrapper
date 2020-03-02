@@ -18,7 +18,7 @@ yarn add rc-field-form
 ```
 
 Then copy the files in `src/form` to your project <br/>
-if you are using `Ant Design`, `form.ts` with `form.antd.ts`. <br/>
+if you are using `Ant Design`, replace `form.ts` with `form.antd.ts`. <br/>
 if not, ignore `form.antd.ts`.
 
 ## Usage
