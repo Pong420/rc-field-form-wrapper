@@ -20,12 +20,14 @@ export const required: HigherOrderValidator = (msg: string) => (_, value) => {
   const val = typeof value === 'string' ? value.trim() : value;
   const valid = !!(Array.isArray(val)
     ? val.length
+    : typeof value === 'boolean'
+    ? value
     : !(typeof val === 'undefined' || val === null || val === ''));
   return valid ? Promise.resolve() : Promise.reject(msg);
 };
 
 export const number: Validator = (_, value) =>
-  /^-?\d*\.?\d*$/.test(value)
+  !value || /^-?\d*\.?\d*$/.test(value)
     ? Promise.resolve()
     : Promise.reject('Plase input number only');
 
@@ -36,8 +38,8 @@ const numberComparation = (
   callback: (value: number, flag: number) => boolean
 ) => (flag: number, msg: string, inclusive = false) => {
   const validator: Validator = (_, value) => {
-    const num = parseFloat(value);
-    return !isNaN(num) && (callback(num, flag) || (inclusive && num === flag))
+    const num = Number(value);
+    return isNaN(num) || callback(num, flag) || (inclusive && num === flag)
       ? Promise.resolve()
       : Promise.reject(msg);
   };
