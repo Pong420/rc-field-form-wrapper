@@ -2,7 +2,7 @@
 
 Wrapper of [react-component/field-form](https://github.com/react-component/field-form), inspired by [Antd 4.0 Form Component](https://next.ant.design/components/form/?locale=en-US#header)
 
-:warning: Before using this, you should have basic understanding of above libarary
+:warning: Before using this, you should have a basic understanding of the above library
 
 ## Features
 
@@ -49,18 +49,18 @@ const { Form, FormItem, useForm } = createForm<Param$Login>();
 </Form>;
 ```
 
-[Demo](https://rc-field-form.herokuapp.com/) ( using [blueprintjs](https://blueprintjs.com/docs/#blueprint) )
+[Demo](https://rc-field-form.herokuapp.com/) using [blueprintjs](https://blueprintjs.com/docs/#blueprint)
 
 ## API Difference
 
 ## Form
 
-| Props                   | Changes                                                                              |
-| ----------------------- | ------------------------------------------------------------------------------------ |
-| initialValues           | Better type intelligence                                                             |
-| onFinish                | Better type intelligence                                                             |
-| beforeSubmit            | (store: Store) => Values, transform `form values` before pass to `onFinish` callback |
-| transoformInitialValues | (store: Values) => Store, transform `initialValues` before initialize                |
+| Prop                    | Changes                                                                                 |
+| ----------------------- | --------------------------------------------------------------------------------------- |
+| initialValues           | Better type intelligence                                                                |
+| onFinish                | Better type intelligence                                                                |
+| beforeSubmit            | (store: Store) => Values, transform `form values` before passing to `onFinish` callback |
+| transoformInitialValues | (store: Values) => Store, transform `initialValues` before initialize                   |
 
 ## FormItem (Field)
 
