@@ -1,5 +1,4 @@
 export type Validator = (rule: any, value: any) => Promise<void>;
-export type HigherOrderValidator = (...args: any[]) => Validator;
 
 export const compose = (validators: Array<Validator | null>): Validator => {
   return async (rule, value) => {
@@ -16,36 +15,42 @@ export const compose = (validators: Array<Validator | null>): Validator => {
   };
 };
 
-export const required: HigherOrderValidator = (msg: string) => (_, value) => {
+export const required = (msg: string): Validator => (_, value) => {
   const val = typeof value === 'string' ? value.trim() : value;
   const valid = !!(Array.isArray(val)
     ? val.length
-    : typeof value === 'boolean'
+    : typeof value === 'boolean' // for checkbox
     ? value
     : !(typeof val === 'undefined' || val === null || val === ''));
   return valid ? Promise.resolve() : Promise.reject(msg);
 };
 
 export const number: Validator = (_, value) =>
-  !value || /^-?\d*\.?\d*$/.test(value)
+  value === '' || /^-?\d*\.?\d*$/.test(value)
     ? Promise.resolve()
     : Promise.reject('Plase input number only');
 
-export const integer: HigherOrderValidator = (msg: string) => (_, value) =>
-  /^[0-9]+\d*$/.test(value) ? Promise.resolve() : Promise.reject(msg);
+export const integer = (msg: string): Validator => (_, value) =>
+  value === '' || /^[0-9]+\d*$/.test(value)
+    ? Promise.resolve()
+    : Promise.reject(msg);
 
 const numberComparation = (
   callback: (value: number, flag: number) => boolean
 ) => (flag: number, msg: string, inclusive = false) => {
   const validator: Validator = (_, value) => {
     const num = Number(value);
-    return isNaN(num) || callback(num, flag) || (inclusive && num === flag)
+    return value === '' ||
+      isNaN(num) ||
+      callback(num, flag) ||
+      (inclusive && num === flag)
       ? Promise.resolve()
       : Promise.reject(msg);
   };
   return validator;
 };
 
+// 最大/小值 e.g. min（最少值，错误信息，等于最少值是否通过）。
 export const min = numberComparation((value, flag) => value > flag);
 export const max = numberComparation((value, flag) => value < flag);
 
@@ -71,20 +76,15 @@ export const maxLength = lengthComparation(
   (length, maxLength) => length <= maxLength
 );
 
-export const passwordFormat: HigherOrderValidator = (msg: string) => (
-  _,
-  value
-) =>
+export const passwordFormat = (msg: string): Validator => (_, value) =>
   /^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z_]{6,20}$/.test(value)
     ? Promise.resolve()
     : Promise.reject(msg);
 
-export const shouldBeEqual: HigherOrderValidator = (val: any, msg: string) => (
+export const shouldBeEqual = (val: any, msg: string): Validator => (_, value) =>
+  value === val ? Promise.resolve() : Promise.reject(msg);
+
+export const shouldNotBeEqual = (val: any, msg: string): Validator => (
   _,
   value
-) => (value === val ? Promise.resolve() : Promise.reject(msg));
-
-export const shouldNotBeEqual: HigherOrderValidator = (
-  val: any,
-  msg: string
-) => (_, value) => (value !== val ? Promise.resolve() : Promise.reject(msg));
+) => (value !== val ? Promise.resolve() : Promise.reject(msg));
