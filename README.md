@@ -9,17 +9,17 @@ Wrapper of [react-component/field-form](https://github.com/react-component/field
 - Stronger Type Checking on
   - initialValues, onFinish, name, deps ...
 - Validators
-- Label and error text ( you will need to customize the style yourself )
+- Label and error text are included ( but you will need to customize the style yourself. [Exmaple](src/form.scss) )
 
 ## Install
+
+Copy the files in `src/form` to your project <br/>
+if you are using `Ant Design`, replace `form.ts` with `form.antd.ts`. <br/>
+if not, ignore `form.antd.ts`. and run
 
 ```
 yarn add rc-field-form
 ```
-
-Then copy the files in `src/form` to your project <br/>
-if you are using `Ant Design`, replace `form.ts` with `form.antd.ts`. <br/>
-if not, ignore `form.antd.ts`.
 
 ## Usage
 
@@ -51,7 +51,7 @@ const { Form, FormItem, useForm } = createForm<Param$Login>();
 
 [Demo](https://rc-field-form.herokuapp.com/) using [blueprintjs](https://blueprintjs.com/docs/#blueprint)
 
-## API Difference
+## API
 
 ## Form
 
@@ -77,7 +77,7 @@ const { Form, FormItem, useForm } = createForm<Param$Login>();
 
 ### validation
 
-- Validator is a function return Promise, and reject a string if incorrect. For more details see [src/form/validators.ts](./src/form/validators.ts)
+- `Validator` is a function return Promise, and reject a string if incorrect. For more details see [src/form/validators.ts](./src/form/validators.ts)
 
 ```ts
 import { Validator, HigherOrderValidator } from '../form';
@@ -95,6 +95,7 @@ const customValidator: Validator = (rule, value) => {
 <FormItem
   name="new_password"
   label="New Password"
+  deps={['old_passwrod']} // remember to adding deps
   validators={({ old_passwrod }) => [
     validators.required('Please input the new password'),
     validators.minLength(8, 'Password should not less then 8'),
@@ -147,7 +148,7 @@ const { Form, FormItem, useForm } = createForm<Schema>({
 });
 ```
 
-### Tranform form values befoe initialize or submit
+### tranform form values befoe initialize or submit
 
 ```tsx
 interface Store {
@@ -175,6 +176,13 @@ function transoformInitialValues({ a, b }: Store): Values {
 }
 
 function FormComponent() {
-  return <Form></Form>;
+  return (
+    <Form
+      beforeSubmit={beforeSubmit}
+      transoformInitialValues={transoformInitialValues}
+    >
+      {/*... */}
+    </Form>
+  );
 }
 ```
