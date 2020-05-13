@@ -115,6 +115,7 @@ export function createForm<S extends {} = Store, V = S>({
 }: Partial<FormItemProps<S>> & { itemClassName?: FormItemClassName } = {}) {
   const FormItem = (props_: FormItemProps<S>) => {
     const {
+      name,
       children,
       validators = [],
       deps = [],
@@ -146,27 +147,31 @@ export function createForm<S extends {} = Store, V = S>({
     return React.createElement(
       RcField,
       {
+        name,
+        rules,
         dependencies: deps,
-        shouldUpdate: createShouldUpdate(deps)
+        shouldUpdate: createShouldUpdate(deps),
+        ...props
       },
-      (_: any, { touched, validating }: FieldData, form: FormInstance<S>) => {
-        const { getFieldError, getFieldsValue } = form;
-        const errors = getFieldError(props.name);
+      (
+        control: any,
+        { touched, validating, errors }: FieldData,
+        form: FormInstance<S>
+      ) => {
+        const { getFieldsValue } = form;
 
-        const field = React.createElement(
-          RcField,
-          {
-            rules,
-            ...props
-          },
-          typeof children !== 'function'
-            ? children
-            : children(getFieldsValue(deps))
-        );
+        const childNode =
+          typeof children === 'function'
+            ? children(getFieldsValue(deps))
+            : React.cloneElement(children as React.ReactElement, {
+                ...control
+              });
 
         if (noStyle) {
-          return field;
+          return childNode;
         }
+
+        const error = errors && errors[0];
 
         return React.createElement(
           'div',
@@ -174,7 +179,7 @@ export function createForm<S extends {} = Store, V = S>({
             className: [
               className,
               ClassName.item,
-              errors && !!errors.length && ClassName.error,
+              error && ClassName.error,
               touched && ClassName.touched,
               validating && ClassName.validating
             ]
@@ -183,8 +188,8 @@ export function createForm<S extends {} = Store, V = S>({
               .trim()
           },
           React.createElement('label', { className: ClassName.label }, label),
-          field,
-          React.createElement('div', { className: ClassName.help }, errors[0])
+          childNode,
+          React.createElement('div', { className: ClassName.help }, error)
         );
       }
     );
