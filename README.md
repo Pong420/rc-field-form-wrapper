@@ -11,15 +11,24 @@ Wrapper of [react-component/field-form](https://github.com/react-component/field
 - Validators
 - Label and error text are included ( but you will need to customize the style yourself. [Exmaple](src/form.scss) )
 
-## Install
-
-Copy the files in `src/form` to your project <br/>
-if you are using `Ant Design`, replace `form.ts` with `form.antd.ts`. <br/>
-if not, ignore `form.antd.ts`. and run
+## Installation
 
 ```
 yarn add rc-field-form
 ```
+
+then
+
+```
+git clone https://github.com/Pong420/rc-field-form.git --branch=build form
+rm -rf ./form/.git
+```
+
+Or
+
+Copy the files in `src/form` to your project <br/>
+if you are using `Ant Design`, replace `form.ts` with `form.antd.ts`. <br/>
+if not, just delete `form.antd.ts`.
 
 ## Usage
 
@@ -55,7 +64,7 @@ const { Form, FormItem, useForm } = createForm<Param$Login>();
 
 ## Form
 
-| Prop                    | Changes                                                                                 |
+| Props                   | Changes                                                                                 |
 | ----------------------- | --------------------------------------------------------------------------------------- |
 | initialValues           | Better type intelligence                                                                |
 | onFinish                | Better type intelligence                                                                |
@@ -64,20 +73,20 @@ const { Form, FormItem, useForm } = createForm<Param$Login>();
 
 ## FormItem (Field)
 
-| Props        | Changes                                                                                   | Type                                   |
-| ------------ | ----------------------------------------------------------------------------------------- | -------------------------------------- |
-| dependencies | Replaced by `deps`                                                                        | ---                                    |
-| deps         | Same as dependencies, but better type intelligence                                        | string[]                               |
-| validators   | Similar to `rules` validator                                                              | Validator[] \| (values) => Validator[] |
-| shouldUpdate | You will not need this props. If `deps` is assigned, this props will create automatically | ---                                    |
-| label        | Form label                                                                                | string                                 |
-| noStyle      | used as a pure field control (label/error will not be renreder)                           | boolean                                |
+| Props        | Changes                                                                                  | Type                                   |
+| ------------ | ---------------------------------------------------------------------------------------- | -------------------------------------- |
+| dependencies | Replaced by `deps`                                                                       | ---                                    |
+| deps         | Same as dependencies, but better type intelligence                                       | string[]                               |
+| validators   | Similar to `rules` validator                                                             | Validator[] \| (values) => Validator[] |
+| shouldUpdate | You will not need this prop. If `deps` is assigned, this props will create automatically | ---                                    |
+| label        | Form label                                                                               | string                                 |
+| noStyle      | used as a pure field control (label/error element will not be renreder)                  | boolean                                |
 
 ## Recipes
 
 ### validation
 
-- `Validator` is a function return Promise, and reject a string if incorrect. For more details see [src/form/validators.ts](./src/form/validators.ts)
+- `Validator` is a function return `Promise`, and reject a string if incorrect. For more details see [src/form/validators.ts](./src/form/validators.ts)
 
 ```ts
 import { Validator, HigherOrderValidator } from '../form';
@@ -89,7 +98,7 @@ const customValidator: Validator = (rule, value) => {
 };
 ```
 
-- `validators` can be a function that return array of validator. It is useful if the validation rely on other field's value. For example validation of new password
+- `validators` prop can be a function that return array of validator. This is useful if the validation rely on other field's value. For example validation of new password
 
 ```tsx
 <FormItem
@@ -183,6 +192,49 @@ function FormComponent() {
     >
       {/*... */}
     </Form>
+  );
+}
+```
+
+### Custom Input Component
+
+```tsx
+interface Props {
+  value?: any;
+  onChange?: (value: any) => void;
+}
+
+// Similar to FormList, but i think this is easier to handle
+function ArraryOfInput({ value, onChange }: Props) {
+  const handleChange = (value: Props['value']) => onChange && onChange(value);
+  const controls = Array.isArray(value) ? value : [''];
+  return (
+    <div>
+      {Array.isArray(controls) && name && (
+        <>
+          {controls.map((_, index) => {
+            return (
+              <div key={index} className="control-row">
+                <input name={[...name, index]} />
+                <button
+                  children="Remove"
+                  onClick={() =>
+                    handleChange([
+                      ...controls.slice(0, index),
+                      ...controls.slice(index + 1)
+                    ])
+                  }
+                />
+              </div>
+            );
+          })}
+          <button
+            children={controls.length === 0 ? 'Init' : 'More'}
+            onClick={() => handleChange([''])}
+          />
+        </>
+      )}
+    </div>
   );
 }
 ```
