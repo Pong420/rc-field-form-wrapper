@@ -5,12 +5,12 @@ import AntdForm, {
 } from 'antd/es/form';
 import { FieldData, FieldError, Store } from 'rc-field-form/lib/interface';
 import { Validator, compose as composeValidator } from './validators';
-import { NamePath } from './typings';
-
-type Rule = NonNullable<AntdFormItemProps['rules']>[number];
+import { NamePath, PathType } from './typings';
 
 export type FormInstance<S extends {} = Store, K extends keyof S = keyof S> = {
-  getFieldValue: <T extends NamePath<S>>(name: T) => T extends K ? S[T] : any;
+  getFieldValue: <T extends NamePath<S>>(
+    name: T
+  ) => T extends K ? S[T] : T extends any[] ? PathType<S, T> : any;
   getFieldsValue: (nameList?: NamePath<S>[]) => S;
   getFieldError: (name: NamePath<S>) => string[];
   getFieldsError: (nameList?: NamePath<S>[]) => FieldError[];
@@ -55,32 +55,37 @@ interface BasicFormItemProps<S extends {} = Store>
     | ((value: S) => Array<Validator | null>);
 }
 
-type FormItemPropsDeps<S extends {} = Store, K extends keyof S = keyof S> =
+type Deps<S> = Array<NamePath<S>>;
+type FormItemPropsDeps<S extends {} = Store> =
   | {
-      deps?: K[];
+      deps?: Deps<S>;
       children?: ReactElement;
       validators?: Array<Validator | null>;
     }
   | {
-      deps: K[];
+      deps: Deps<S>;
       validators: (value: S) => Array<Validator | null>;
     }
   | {
-      deps: K[];
+      deps: Deps<S>;
       children: (value: S) => ReactElement;
     };
 
-export type FormItemProps<
-  S extends {} = Store,
-  K extends keyof S = keyof S
-> = BasicFormItemProps<S> & FormItemPropsDeps<S, K>;
+export type FormItemProps<S extends {} = Store> = BasicFormItemProps<S> &
+  FormItemPropsDeps<S>;
 
-export function createShouldUpdate<FieldName extends string | number>(
-  names: FieldName[]
+type Rule = NonNullable<AntdFormItemProps['rules']>[number];
+
+const getValues = (obj: any, paths: (string | number)[]) =>
+  paths.reduce<any>((result, key) => result[key] && result[key], obj);
+
+export function createShouldUpdate(
+  names: Array<string | number | (string | number)[]> = []
 ): AntdFormItemProps['shouldUpdate'] {
   return (prev, curr) => {
     for (const name of names) {
-      if (prev[name] !== curr[name]) {
+      const paths = Array.isArray(name) ? name : [name];
+      if (getValues(prev, paths) !== getValues(curr, paths)) {
         return true;
       }
     }
@@ -100,7 +105,7 @@ export function createForm<S extends {} = Store, V = S>(
       ...defaultProps,
       ...props_
     } as FormItemProps<S> & {
-      deps?: Array<string | number>;
+      deps?: Array<string | number | (string | number)[]>;
       name: string | number;
     };
 
@@ -160,9 +165,7 @@ export function createForm<S extends {} = Store, V = S>(
       )
   );
 
-  const useForm: (
-    form?: FormInstance<S>
-  ) => [FormInstance<S>] = AntdForm.useForm as any;
+  const useForm: () => [FormInstance<S>] = AntdForm.useForm as any;
 
   return {
     Form,

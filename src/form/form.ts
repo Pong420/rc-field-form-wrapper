@@ -6,10 +6,12 @@ import { FormProps as RcFormProps } from 'rc-field-form/es/Form';
 import { FieldProps as RcFieldProps } from 'rc-field-form/es/Field';
 import { FieldData, FieldError, Store } from 'rc-field-form/lib/interface';
 import { Validator, compose as composeValidator } from './validators';
-import { NamePath } from './typings';
+import { NamePath, PathType } from './typings';
 
 export type FormInstance<S extends {} = Store, K extends keyof S = keyof S> = {
-  getFieldValue: <T extends NamePath<S>>(name: T) => T extends K ? S[T] : any;
+  getFieldValue: <T extends NamePath<S>>(
+    name: T
+  ) => T extends K ? S[T] : T extends any[] ? PathType<S, T> : any;
   getFieldsValue: (nameList?: NamePath<S>[]) => S;
   getFieldError: (name: NamePath<S>) => string[];
   getFieldsError: (nameList?: NamePath<S>[]) => FieldError[];
@@ -50,31 +52,29 @@ interface BasicFormItemProps<S extends {} = Store>
   validators?:
     | Array<Validator | null>
     | ((value: S) => Array<Validator | null>);
-  onReset?(): void;
   label?: ReactNode;
   noStyle?: boolean;
   className?: string;
 }
 
-type FormItemPropsDeps<S extends {} = Store, K extends keyof S = keyof S> =
+type Deps<S> = Array<NamePath<S>>;
+type FormItemPropsDeps<S extends {} = Store> =
   | {
-      deps?: K[];
+      deps?: Deps<S>;
       children?: ReactElement;
       validators?: Array<Validator | null>;
     }
   | {
-      deps: K[];
+      deps: Deps<S>;
       validators: (value: S) => Array<Validator | null>;
     }
   | {
-      deps: K[];
+      deps: Deps<S>;
       children: (value: S) => ReactElement;
     };
 
-export type FormItemProps<
-  S extends {} = Store,
-  K extends keyof S = keyof S
-> = BasicFormItemProps<S> & FormItemPropsDeps<S, K>;
+export type FormItemProps<S extends {} = Store> = BasicFormItemProps<S> &
+  FormItemPropsDeps<S>;
 
 export interface FormItemClassName {
   item?: string;
@@ -87,12 +87,16 @@ export interface FormItemClassName {
 
 type Rule = NonNullable<RcFieldProps['rules']>[number];
 
-export function createShouldUpdate<FieldName extends string | number>(
-  names: FieldName[]
+const getValues = (obj: any, paths: (string | number)[]) =>
+  paths.reduce<any>((result, key) => result[key] && result[key], obj);
+
+export function createShouldUpdate(
+  names: Array<string | number | (string | number)[]> = []
 ): RcFieldProps['shouldUpdate'] {
   return (prev, curr) => {
     for (const name of names) {
-      if (prev[name] !== curr[name]) {
+      const paths = Array.isArray(name) ? name : [name];
+      if (getValues(prev, paths) !== getValues(curr, paths)) {
         return true;
       }
     }
@@ -113,6 +117,16 @@ export function createForm<S extends {} = Store, V = S>({
   itemClassName,
   ...defaultProps
 }: Partial<FormItemProps<S>> & { itemClassName?: FormItemClassName } = {}) {
+  const ClassNames = { ...defaultFormItemClassName, ...itemClassName };
+
+  const FormItemLabel: React.FC<{ label: string }> = ({ children, label }) =>
+    React.createElement(
+      'div',
+      { className: ClassNames.item },
+      React.createElement('label', { className: ClassNames.label }, label),
+      children
+    );
+
   const FormItem = (props_: FormItemProps<S>) => {
     const {
       name,
@@ -127,11 +141,9 @@ export function createForm<S extends {} = Store, V = S>({
       ...defaultProps,
       ...props_
     } as FormItemProps<S> & {
-      deps?: Array<string | number>;
+      deps?: Array<string | number | (string | number)[]>;
       name: string | number;
     };
-
-    const ClassName = { ...defaultFormItemClassName, ...itemClassName };
 
     const rules: Rule[] =
       typeof validators === 'function'
@@ -149,8 +161,9 @@ export function createForm<S extends {} = Store, V = S>({
       {
         name,
         rules,
-        dependencies: deps,
-        shouldUpdate: createShouldUpdate(deps),
+        ...(deps.length
+          ? { dependencies: deps, shouldUpdate: createShouldUpdate(deps) }
+          : {}),
         ...props
       },
       (
@@ -178,18 +191,18 @@ export function createForm<S extends {} = Store, V = S>({
           {
             className: [
               className,
-              ClassName.item,
-              error && ClassName.error,
-              touched && ClassName.touched,
-              validating && ClassName.validating
+              ClassNames.item,
+              error && ClassNames.error,
+              touched && ClassNames.touched,
+              validating && ClassNames.validating
             ]
               .filter(Boolean)
               .join(' ')
               .trim()
           },
-          React.createElement('label', { className: ClassName.label }, label),
+          React.createElement('label', { className: ClassNames.label }, label),
           childNode,
-          React.createElement('div', { className: ClassName.help }, error)
+          React.createElement('div', { className: ClassNames.help }, error)
         );
       }
     );
@@ -226,15 +239,14 @@ export function createForm<S extends {} = Store, V = S>({
       )
   );
 
-  const useForm: (
-    form?: FormInstance<S>
-  ) => [FormInstance<S>] = RcUseForm as any;
+  const useForm: () => [FormInstance<S>] = RcUseForm as any;
 
   return {
     Form,
     FormItem,
     FormList: RcForm.List,
     FormProvider: RcForm.FormProvider,
+    FormItemLabel,
     useForm
   };
 }
