@@ -5,12 +5,11 @@ import AntdForm, {
 } from 'antd/es/form';
 import { FieldData, FieldError, Store } from 'rc-field-form/lib/interface';
 import { Validator, compose as composeValidator } from './validators';
-import { NamePath, PathType } from './typings';
+import { NamePath, Paths, PathType } from './typings';
 
 export type FormInstance<S extends {} = Store, K extends keyof S = keyof S> = {
-  getFieldValue: <T extends NamePath<S>>(
-    name: T
-  ) => T extends K ? S[T] : T extends any[] ? PathType<S, T> : any;
+  getFieldValue(name: K): S[K];
+  getFieldValue<T extends Paths<S>>(name: T): PathType<S, T>;
   getFieldsValue: (nameList?: NamePath<S>[]) => S;
   getFieldError: (name: NamePath<S>) => string[];
   getFieldsError: (nameList?: NamePath<S>[]) => FieldError[];
