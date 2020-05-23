@@ -1,6 +1,5 @@
 type ValueOf<T> = T[keyof T];
 
-// https://stackoverflow.com/a/58436959
 type Cons<H, T> = T extends readonly any[]
   ? ((h: H, ...t: T) => void) extends (...r: infer R) => void
     ? R
@@ -33,24 +32,23 @@ type Prev = [
   ...0[]
 ];
 
-type Paths<T, D extends number = 10> = [D] extends [never]
+// https://stackoverflow.com/a/58436959
+export type Paths<T, D extends number = 10> = [D] extends [never]
   ? never
+  : T extends any[] // for array
+  ? [number]
   : T extends object
   ? {
-      [K in keyof T]-?:
-        | [K]
-        | (Paths<T[K], Prev[D]> extends infer P
-            ? P extends []
-              ? never
-              : Cons<K, P>
-            : never);
+      [K in keyof T]-?: K extends keyof T[K] & keyof ValueOf<T[K]>
+        ? (keyof T)[] // this turn [string, string, string] into string[]
+        :
+            | [K]
+            | (Paths<T[K], Prev[D]> extends infer P
+                ? P extends []
+                  ? never
+                  : Cons<K, P>
+                : never);
     }[keyof T]
-  : [];
-
-type Leaves<T, D extends number = 10> = [D] extends [never]
-  ? never
-  : T extends object
-  ? { [K in keyof T]-?: Cons<K, Leaves<T[K], Prev[D]>> }[keyof T]
   : [];
 
 interface NextInt {
@@ -72,9 +70,21 @@ export type PathType<T, P extends any[], Index extends keyof P & number = 0> = {
     : never;
 }[Index];
 
-export type NamePath<T, D extends number = 10> = keyof T | Paths<T, D>;
+export type NamePath<T, D extends number = 4> = keyof T | Paths<T, D>;
 
 export interface Control<T = any> {
   value?: T;
   onChange?: (value: T) => void;
 }
+
+// for debug purpose
+type T = {
+  a: {
+    b: {
+      c: [1, 2, 3];
+    };
+  };
+};
+type T1 = NamePath<Record<number | string, any>>;
+type T2 = NamePath<Record<string, any>>;
+type T3 = NamePath<T>;
