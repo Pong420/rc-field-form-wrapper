@@ -57,7 +57,6 @@ const numberComparation = (
   return validator;
 };
 
-// 最大/小值 e.g. min（最少值，错误信息，等于最少值是否通过）。
 export const min = numberComparation((value, flag) => value > flag);
 export const max = numberComparation((value, flag) => value < flag);
 
