@@ -51,6 +51,12 @@ export type Paths<T, D extends number = 10> = [D] extends [never]
     }[keyof T]
   : [];
 
+export type DeepPartial<T> = T extends Function
+  ? T
+  : T extends object
+  ? { [P in keyof T]?: DeepPartial<T[P]> }
+  : T;
+
 interface NextInt {
   0: 1;
   1: 2;
@@ -88,3 +94,4 @@ type T = {
 type T1 = NamePath<Record<number | string, any>>;
 type T2 = NamePath<Record<string, any>>;
 type T3 = NamePath<T>;
+type T4 = DeepPartial<T>;

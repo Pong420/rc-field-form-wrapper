@@ -5,7 +5,7 @@ import AntdForm, {
 } from 'antd/es/form';
 import { FieldData, FieldError, Store } from 'rc-field-form/lib/interface';
 import { Validator, compose as composeValidator } from './validators';
-import { NamePath, Paths, PathType } from './typings';
+import { NamePath, Paths, PathType, DeepPartial } from './typings';
 
 export type FormInstance<S extends {} = Store, K extends keyof S = keyof S> = {
   getFieldValue(name: K): S[K];
@@ -23,7 +23,7 @@ export type FormInstance<S extends {} = Store, K extends keyof S = keyof S> = {
   isFieldsValidating: (nameList: NamePath<S>[]) => boolean;
   resetFields: (fields?: NamePath<S>[]) => void;
   setFields: (fields: FieldData[]) => void;
-  setFieldsValue: (value: Partial<S>) => void;
+  setFieldsValue: (value: DeepPartial<S>) => void;
   validateFields: (nameList?: NamePath<K>[]) => Promise<S>;
   submit: () => void;
   scrollToField: (name: NamePath<S>) => void;
@@ -32,11 +32,11 @@ export type FormInstance<S extends {} = Store, K extends keyof S = keyof S> = {
 export interface FormProps<S extends {} = Store, V = S>
   extends Omit<AntdFormProps, 'form' | 'onFinish' | 'onValuesChange' | 'ref'> {
   form?: FormInstance<S>;
-  initialValues?: Partial<V>;
+  initialValues?: DeepPartial<V>;
   onFinish?: (values: V) => void;
-  onValuesChange?: (changes: Partial<S>, values: S) => void;
+  onValuesChange?: (changes: DeepPartial<S>, values: S) => void;
   ref?: React.Ref<FormInstance<S>>;
-  transoformInitialValues?: (payload: Partial<V>) => Partial<S>;
+  transoformInitialValues?: (payload: DeepPartial<V>) => DeepPartial<S>;
   beforeSubmit?: (payload: S) => V;
 }
 
