@@ -8,33 +8,34 @@ import { FieldData, FieldError, Store } from 'rc-field-form/lib/interface';
 import { Validator, compose as composeValidator } from './validators';
 import { NamePath, Paths, PathType, DeepPartial } from './typings';
 
-export type FormInstance<S extends {} = Store, K extends keyof S = keyof S> = {
-  getFieldValue(name: K): S[K];
+export type FormInstance<S extends {} = Store, V = S> = {
+  getFieldValue<K extends keyof S>(name: K): S[K];
   getFieldValue<T extends Paths<S>>(name: T): PathType<S, T>;
-  getFieldsValue: (nameList?: NamePath<S>[]) => S;
-  getFieldError: (name: NamePath<S>) => string[];
-  getFieldsError: (nameList?: NamePath<S>[]) => FieldError[];
+  getFieldsValue(nameList?: NamePath<S>[]): S;
+  getFieldError(name: NamePath<S>): string[];
+  getFieldsError(nameList?: NamePath<S>[]): FieldError[];
   isFieldsTouched(
     nameList?: NamePath<S>[],
     allFieldsTouched?: boolean
   ): boolean;
   isFieldsTouched(allFieldsTouched?: boolean): boolean;
-  isFieldTouched: (name: NamePath<S>) => boolean;
-  isFieldValidating: (name: NamePath<S>) => boolean;
-  isFieldsValidating: (nameList: NamePath<S>[]) => boolean;
-  resetFields: (fields?: NamePath<S>[]) => void;
-  setFields: (fields: FieldData[]) => void;
-  setFieldsValue: (value: DeepPartial<S>) => void;
-  validateFields: (nameList?: NamePath<K>[]) => Promise<S>;
+  isFieldTouched(name: NamePath<S>): boolean;
+  isFieldValidating(name: NamePath<S>): boolean;
+  isFieldsValidating(nameList: NamePath<S>[]): boolean;
+  resetFields(fields?: NamePath<S>[]): void;
+  setFields(fields: FieldData[]): void;
+  setFieldsValue(value: DeepPartial<S>): void;
+  validateFields<K extends keyof S>(nameList?: NamePath<K>[]): Promise<V>;
   submit: () => void;
 };
 
 export interface FormProps<S extends {} = Store, V = S>
   extends Omit<RcFormProps, 'form' | 'onFinish' | 'onValuesChange'> {
-  form?: FormInstance<S>;
+  form?: FormInstance<S, V>;
   initialValues?: DeepPartial<V>;
   onFinish?: (values: V) => void;
   onValuesChange?: (changes: DeepPartial<S>, values: S) => void;
+  ref?: React.Ref<FormInstance<S>>;
   transoformInitialValues?: (payload: DeepPartial<V>) => DeepPartial<S>;
   beforeSubmit?: (payload: S) => V;
 }
@@ -168,16 +169,18 @@ export function createForm<S extends {} = Store, V = S>({
       (
         control: any,
         { touched, validating, errors }: FieldData,
-        form: FormInstance<S>
+        form: FormInstance<S, V>
       ) => {
         const { getFieldsValue } = form;
 
         const childNode =
           typeof children === 'function'
             ? children(getFieldsValue(deps))
-            : React.cloneElement(children as React.ReactElement, {
+            : name
+            ? React.cloneElement(children as React.ReactElement, {
                 ...control
-              });
+              })
+            : children;
 
         if (noStyle) {
           return childNode;
@@ -207,7 +210,7 @@ export function createForm<S extends {} = Store, V = S>({
     );
   };
 
-  const Form = React.forwardRef<FormInstance<S>, FormProps<S>>(
+  const Form = React.forwardRef<FormInstance<S, V>, FormProps<S, V>>(
     (
       {
         children,
@@ -238,7 +241,7 @@ export function createForm<S extends {} = Store, V = S>({
       )
   );
 
-  const useForm: () => [FormInstance<S>] = RcUseForm as any;
+  const useForm: () => [FormInstance<S, V>] = RcUseForm as any;
 
   return {
     Form,
