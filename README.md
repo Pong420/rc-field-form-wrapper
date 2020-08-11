@@ -113,7 +113,7 @@ const customValidator: Validator = (rule, value) => {
     validators.shouldNotBeEqual(
       old_passwrod,
       'Password should not be equal to old password'
-    )
+    ),
   ]}
 >
   <InputGroup />
@@ -132,8 +132,8 @@ const { Form, FormItem } = createForm({
     error: 'rc-form-item-error',
     touched: 'rc-form-item-touched',
     validating: 'rc-form-item-validating',
-    help: 'rc-form-item-help'
-  }
+    help: 'rc-form-item-help',
+  },
 });
 ```
 
@@ -153,7 +153,7 @@ You can set default props for all `FormItem`
 const span = 6;
 const { Form, FormItem, useForm } = createForm<Schema>({
   labelCol: { span },
-  wrapperCol: { span: 24 - span }
+  wrapperCol: { span: 24 - span },
 });
 ```
 
@@ -174,13 +174,13 @@ const { Form, FormItem, useForm } = createForm<Store, Values>();
 function beforeSubmit({ tuple }: Partial<Values>): Partial<Store> {
   return {
     a: tuple[0],
-    b: tuple[1]
+    b: tuple[1],
   };
 }
 
 function transoformInitialValues({ a, b }: Store): Values {
   return {
-    tuple: [a, b]
+    tuple: [a, b],
   };
 }
 
@@ -192,49 +192,6 @@ function FormComponent() {
     >
       {/*... */}
     </Form>
-  );
-}
-```
-
-### Custom Input Component
-
-```tsx
-interface Props {
-  value?: any;
-  onChange?: (value: any) => void;
-}
-
-// Similar to FormList, but i think this is easier to handle
-function ArraryOfInput({ value, onChange }: Props) {
-  const handleChange = (value: Props['value']) => onChange && onChange(value);
-  const controls = Array.isArray(value) ? value : [''];
-  return (
-    <div>
-      {Array.isArray(controls) && name && (
-        <>
-          {controls.map((_, index) => {
-            return (
-              <div key={index} className="control-row">
-                <input name={[...name, index]} />
-                <button
-                  children="Remove"
-                  onClick={() =>
-                    handleChange([
-                      ...controls.slice(0, index),
-                      ...controls.slice(index + 1)
-                    ])
-                  }
-                />
-              </div>
-            );
-          })}
-          <button
-            children={controls.length === 0 ? 'Init' : 'More'}
-            onClick={() => handleChange([''])}
-          />
-        </>
-      )}
-    </div>
   );
 }
 ```
