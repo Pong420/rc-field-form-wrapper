@@ -1,7 +1,7 @@
 import React, { ReactElement } from 'react';
 import AntdForm, {
   FormProps as AntdFormProps,
-  FormItemProps as AntdFormItemProps
+  FormItemProps as AntdFormItemProps,
 } from 'antd/es/form';
 import { FieldData, FieldError, Store } from 'rc-field-form/lib/interface';
 import { Validator, compose as composeValidator } from './validators';
@@ -24,7 +24,7 @@ export type FormInstance<S extends {} = Store, V = S> = {
   resetFields(fields?: NamePath<S>[]): void;
   setFields(fields: FieldData[]): void;
   setFieldsValue(value: DeepPartial<S>): void;
-  validateFields<K extends keyof S>(nameList?: NamePath<K>[]): Promise<V>;
+  validateFields<K extends keyof S>(nameList?: NamePath<K>[]): Promise<S>;
   submit: () => void;
   scrollToField(name: NamePath<S>): void;
 };
@@ -102,7 +102,7 @@ export function createForm<S extends {} = Store, V = S>(
   const FormItem = (props_: FormItemProps<S>) => {
     const { children, validators = [], deps = [], ...props } = {
       ...defaultProps,
-      ...props_
+      ...props_,
     } as FormItemProps<S> & {
       deps?: Array<string | number | (string | number)[]>;
       name: string | number;
@@ -114,8 +114,8 @@ export function createForm<S extends {} = Store, V = S>(
             ({ getFieldsValue }) => ({
               validator: composeValidator(
                 validators(getFieldsValue(deps) as any)
-              )
-            })
+              ),
+            }),
           ]
         : [{ validator: composeValidator(validators) }];
 
@@ -124,7 +124,7 @@ export function createForm<S extends {} = Store, V = S>(
       {
         rules,
         shouldUpdate: createShouldUpdate(deps),
-        ...props
+        ...props,
       },
       typeof children === 'function'
         ? ({ getFieldsValue }: FormInstance<S>) =>
@@ -158,7 +158,7 @@ export function createForm<S extends {} = Store, V = S>(
             onFinish &&
             ((store: any) => {
               onFinish(beforeSubmit ? beforeSubmit(store) : store);
-            })
+            }),
         } as any,
         children
       )
@@ -171,6 +171,6 @@ export function createForm<S extends {} = Store, V = S>(
     FormItem,
     FormList: AntdForm.List,
     FormProvider: AntdForm.Provider,
-    useForm
+    useForm,
   };
 }

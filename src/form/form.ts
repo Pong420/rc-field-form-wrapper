@@ -25,7 +25,7 @@ export type FormInstance<S extends {} = Store, V = S> = {
   resetFields(fields?: NamePath<S>[]): void;
   setFields(fields: FieldData[]): void;
   setFieldsValue(value: DeepPartial<S>): void;
-  validateFields<K extends keyof S>(nameList?: NamePath<K>[]): Promise<V>;
+  validateFields<K extends keyof S>(nameList?: NamePath<K>[]): Promise<S>;
   submit: () => void;
 };
 
@@ -110,7 +110,7 @@ const defaultFormItemClassName: Required<FormItemClassName> = {
   error: 'rc-form-item-error',
   touched: 'rc-form-item-touched',
   validating: 'rc-form-item-validating',
-  help: 'rc-form-item-help'
+  help: 'rc-form-item-help',
 };
 
 export function createForm<S extends {} = Store, V = S>({
@@ -139,7 +139,7 @@ export function createForm<S extends {} = Store, V = S>({
       ...props
     } = {
       ...defaultProps,
-      ...props_
+      ...props_,
     } as FormItemProps<S> & {
       deps?: Array<string | number | (string | number)[]>;
       name: string | number;
@@ -151,8 +151,8 @@ export function createForm<S extends {} = Store, V = S>({
             ({ getFieldsValue }) => ({
               validator: composeValidator(
                 validators(getFieldsValue(deps) as any)
-              )
-            })
+              ),
+            }),
           ]
         : [{ validator: composeValidator(validators) }];
 
@@ -164,7 +164,7 @@ export function createForm<S extends {} = Store, V = S>({
         ...(deps.length
           ? { dependencies: deps, shouldUpdate: createShouldUpdate(deps) }
           : {}),
-        ...props
+        ...props,
       },
       (
         control: any,
@@ -178,7 +178,7 @@ export function createForm<S extends {} = Store, V = S>({
             ? children(getFieldsValue(deps))
             : name
             ? React.cloneElement(children as React.ReactElement, {
-                ...control
+                ...control,
               })
             : children;
 
@@ -196,11 +196,11 @@ export function createForm<S extends {} = Store, V = S>({
               ClassNames.item,
               error && ClassNames.error,
               touched && ClassNames.touched,
-              validating && ClassNames.validating
+              validating && ClassNames.validating,
             ]
               .filter(Boolean)
               .join(' ')
-              .trim()
+              .trim(),
           },
           React.createElement('label', { className: ClassNames.label }, label),
           childNode,
@@ -235,7 +235,7 @@ export function createForm<S extends {} = Store, V = S>({
             onFinish &&
             ((store: any) => {
               onFinish(beforeSubmit ? beforeSubmit(store) : store);
-            })
+            }),
         } as any,
         children
       )
@@ -249,6 +249,6 @@ export function createForm<S extends {} = Store, V = S>({
     FormList: RcForm.List,
     FormProvider: RcForm.FormProvider,
     FormItemLabel,
-    useForm
+    useForm,
   };
 }

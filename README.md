@@ -64,12 +64,12 @@ const { Form, FormItem, useForm } = createForm<Param$Login>();
 
 ## Form
 
-| Props                   | Changes                                                                                 |
-| ----------------------- | --------------------------------------------------------------------------------------- |
-| initialValues           | Better type intelligence                                                                |
-| onFinish                | Better type intelligence                                                                |
-| beforeSubmit            | (store: Store) => Values, transform `form values` before passing to `onFinish` callback |
-| transoformInitialValues | (store: Values) => Store, transform `initialValues` before initialize                   |
+| Props                   | Changes                                                                                                                             |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| initialValues           | Better type intelligence                                                                                                            |
+| onFinish                | Better type intelligence                                                                                                            |
+| beforeSubmit            | `(store: Store) => Values`, transform `form values` before passing to `onFinish` callback. But not work for `form.validateFields()` |
+| transoformInitialValues | `(values: Values) => Store`, transform `initialValues` before initialize                                                            |
 
 ## FormItem (Field)
 
