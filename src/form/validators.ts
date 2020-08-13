@@ -26,19 +26,21 @@ export const required = (msg: string): Validator => (_, value) => {
 };
 
 export const number: Validator = (_, value) =>
-  !value || value === '-' || /^-?\d*\.?\d*$/.test(value)
+  !value || /^-?\d+\.?\d*$/.test(value)
     ? Promise.resolve()
     : Promise.reject('Plase input number only');
 
 export const integer = (
   msg: string = 'Plase input integer only'
 ): Validator => (_, value) =>
-  value === '' || /^(-)?\d*$/.test(value)
+  value === '' || isNaN(Number(value)) || /^(-)?\d*$/.test(value)
     ? Promise.resolve()
     : Promise.reject(msg);
 
 export const maxDecimal = (max: number): Validator => (_, value) =>
-  value === '' || new RegExp(`^(\\d+|\\d\\.\\d{0,${max}})$`).test(value)
+  value === '' ||
+  isNaN(Number(value)) ||
+  new RegExp(`^(\\d+|\\d+\\.\\d{0,${max}})$`).test(value)
     ? Promise.resolve()
     : Promise.reject(`Should not more then ${max} decimal`);
 
