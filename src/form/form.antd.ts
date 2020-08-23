@@ -76,7 +76,7 @@ export type FormItemProps<S extends {} = Store> = BasicFormItemProps<S> &
 type Rule = NonNullable<AntdFormItemProps['rules']>[number];
 
 const getValues = (obj: any, paths: (string | number)[]) =>
-  paths.reduce<any>((result, key) => result[key] && result[key], obj);
+  paths.reduce<any>((result, key) => result && result[key], obj);
 
 export function createShouldUpdate(
   names: Array<string | number | (string | number)[]> = []

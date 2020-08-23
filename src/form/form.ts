@@ -88,7 +88,7 @@ export interface FormItemClassName {
 type Rule = NonNullable<RcFieldProps['rules']>[number];
 
 const getValues = (obj: any, paths: (string | number)[]) =>
-  paths.reduce<any>((result, key) => result[key] && result[key], obj);
+  paths.reduce<any>((result, key) => result && result[key], obj);
 
 export function createShouldUpdate(
   names: Array<string | number | (string | number)[]> = []
@@ -119,7 +119,7 @@ export function createForm<S extends {} = Store, V = S>({
 }: Partial<FormItemProps<S>> & { itemClassName?: FormItemClassName } = {}) {
   const ClassNames = { ...defaultFormItemClassName, ...itemClassName };
 
-  const FormItemLabel: React.FC<{ label: string }> = ({ children, label }) =>
+  const FormItemLabel: React.FC<{ label?: string }> = ({ children, label }) =>
     React.createElement(
       'div',
       { className: ClassNames.item },
@@ -252,3 +252,12 @@ export function createForm<S extends {} = Store, V = S>({
     useForm,
   };
 }
+
+export const {
+  Form,
+  FormItem,
+  FormItemLabel,
+  FormList,
+  useForm,
+  FormProvider,
+} = createForm();
