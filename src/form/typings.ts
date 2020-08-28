@@ -83,5 +83,9 @@ export type NamePath<T, D extends number = 4> = keyof T | Paths<T, D>;
 
 export interface Control<T = any> {
   value?: T;
-  onChange?: (value: T) => void;
+  onChange?: (value?: T) => void;
+}
+
+export interface ControlProps<T = unknown> extends Control<T> {
+  name?: (string | number)[];
 }
