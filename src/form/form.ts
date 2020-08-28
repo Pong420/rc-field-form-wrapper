@@ -4,9 +4,25 @@ import React, { ReactElement, ReactNode } from 'react';
 import RcForm, { Field as RcField, useForm as RcUseForm } from 'rc-field-form';
 import { FormProps as RcFormProps } from 'rc-field-form/es/Form';
 import { FieldProps as RcFieldProps } from 'rc-field-form/es/Field';
-import { FieldData, FieldError, Store } from 'rc-field-form/lib/interface';
+import { Meta, FieldError, Store } from 'rc-field-form/lib/interface';
 import { Validator, compose as composeValidator } from './validators';
 import { NamePath, Paths, PathType, DeepPartial } from './typings';
+import { HTMLDivProps } from '@blueprintjs/core';
+
+type LabelElementProps = React.DetailedHTMLProps<
+  React.LabelHTMLAttributes<HTMLLabelElement>,
+  HTMLLabelElement
+>;
+
+export interface FieldData<S extends {} = Store, Name = NamePath<S>>
+  extends Partial<Omit<Meta, 'name'>> {
+  name: Name;
+  value?: Name extends Paths<S>
+    ? PathType<S, Name>
+    : Name extends keyof S
+    ? S[Name]
+    : undefined;
+}
 
 export type FormInstance<S extends {} = Store> = {
   getFieldValue<K extends keyof S>(name: K): S[K];
@@ -23,7 +39,7 @@ export type FormInstance<S extends {} = Store> = {
   isFieldValidating(name: NamePath<S>): boolean;
   isFieldsValidating(nameList: NamePath<S>[]): boolean;
   resetFields(fields?: NamePath<S>[]): void;
-  setFields(fields: FieldData[]): void;
+  setFields(fields: FieldData<S, keyof S | NamePath<S>>[]): void;
   setFieldsValue(value: DeepPartial<S>): void;
   validateFields<K extends keyof S>(nameList?: NamePath<K>[]): Promise<S>;
   submit: () => void;
@@ -44,6 +60,10 @@ type OmititedRcFieldProps = Omit<
   RcFieldProps,
   'name' | 'dependencies' | 'children' | 'rules'
 >;
+
+export interface FormItemLabelProps extends HTMLDivProps {
+  label?: ReactNode;
+}
 
 interface BasicFormItemProps<S extends {} = Store>
   extends OmititedRcFieldProps {
@@ -110,7 +130,7 @@ const defaultFormItemClassName: Required<FormItemClassName> = {
   error: 'rc-form-item-error',
   touched: 'rc-form-item-touched',
   validating: 'rc-form-item-validating',
-  help: 'rc-form-item-help',
+  help: 'rc-form-item-help'
 };
 
 export function createForm<S extends {} = Store, V = S>({
@@ -119,15 +139,27 @@ export function createForm<S extends {} = Store, V = S>({
 }: Partial<FormItemProps<S>> & { itemClassName?: FormItemClassName } = {}) {
   const ClassNames = { ...defaultFormItemClassName, ...itemClassName };
 
-  const FormItemLabel: React.FC<{ label?: string }> = ({ children, label }) =>
-    React.createElement(
+  const FormItemLabel: React.FC<FormItemLabelProps> = ({
+    className = defaultProps.className,
+    children,
+    label,
+    ...props
+  }) =>
+    React.createElement<HTMLDivProps>(
       'div',
-      { className: ClassNames.item },
-      React.createElement('label', { className: ClassNames.label }, label),
+      {
+        ...props,
+        className: [className, ClassNames.item].filter(Boolean).join(' ').trim()
+      },
+      React.createElement<LabelElementProps>(
+        'label',
+        { className: ClassNames.label },
+        label
+      ),
       children
     );
 
-  const FormItem = (props_: FormItemProps<S>) => {
+  const FormItem = (itemProps: FormItemProps<S>) => {
     const {
       name,
       children,
@@ -139,7 +171,7 @@ export function createForm<S extends {} = Store, V = S>({
       ...props
     } = {
       ...defaultProps,
-      ...props_,
+      ...itemProps
     } as FormItemProps<S> & {
       deps?: Array<string | number | (string | number)[]>;
       name: string | number;
@@ -151,8 +183,8 @@ export function createForm<S extends {} = Store, V = S>({
             ({ getFieldsValue }) => ({
               validator: composeValidator(
                 validators(getFieldsValue(deps) as any)
-              ),
-            }),
+              )
+            })
           ]
         : [{ validator: composeValidator(validators) }];
 
@@ -164,11 +196,11 @@ export function createForm<S extends {} = Store, V = S>({
         ...(deps.length
           ? { dependencies: deps, shouldUpdate: createShouldUpdate(deps) }
           : {}),
-        ...props,
+        ...props
       },
       (
         control: any,
-        { touched, validating, errors }: FieldData,
+        { touched, validating, errors }: FieldData<S>,
         form: FormInstance<S>
       ) => {
         const { getFieldsValue } = form;
@@ -178,7 +210,7 @@ export function createForm<S extends {} = Store, V = S>({
             ? children(getFieldsValue(deps))
             : name
             ? React.cloneElement(children as React.ReactElement, {
-                ...control,
+                ...control
               })
             : children;
 
@@ -188,23 +220,26 @@ export function createForm<S extends {} = Store, V = S>({
 
         const error = errors && errors[0];
 
-        return React.createElement(
-          'div',
+        return React.createElement<FormItemLabelProps>(
+          FormItemLabel,
           {
+            label,
             className: [
               className,
-              ClassNames.item,
               error && ClassNames.error,
               touched && ClassNames.touched,
-              validating && ClassNames.validating,
+              validating && ClassNames.validating
             ]
               .filter(Boolean)
               .join(' ')
-              .trim(),
+              .trim()
           },
-          React.createElement('label', { className: ClassNames.label }, label),
           childNode,
-          React.createElement('div', { className: ClassNames.help }, error)
+          React.createElement<HTMLDivProps>(
+            'div',
+            { className: ClassNames.help },
+            error
+          )
         );
       }
     );
@@ -235,8 +270,8 @@ export function createForm<S extends {} = Store, V = S>({
             onFinish &&
             ((store: any) => {
               onFinish(beforeSubmit ? beforeSubmit(store) : store);
-            }),
-        } as any,
+            })
+        } as RcFormProps,
         children
       )
   );
@@ -249,7 +284,7 @@ export function createForm<S extends {} = Store, V = S>({
     FormList: RcForm.List,
     FormProvider: RcForm.FormProvider,
     FormItemLabel,
-    useForm,
+    useForm
   };
 }
 
@@ -259,5 +294,5 @@ export const {
   FormItemLabel,
   FormList,
   useForm,
-  FormProvider,
+  FormProvider
 } = createForm();
