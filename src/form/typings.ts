@@ -37,7 +37,7 @@ export type Paths<T, D extends number = 10> = [D] extends [never]
   ? never
   : T extends any[] // for array
   ? [number]
-  : T extends Record<PropertyKey, unknown>
+  : T extends object // eslint-disable-line @typescript-eslint/ban-types
   ? {
       [K in keyof T]-?: K extends keyof T[K] & keyof ValueOf<T[K]>
         ? (keyof T)[] // this turn [string, string, string] into string[]
@@ -52,11 +52,10 @@ export type Paths<T, D extends number = 10> = [D] extends [never]
   : [];
 
 export type DeepPartial<T> = T extends any[] | (() => void)
-  ? T // eslint-disable-next-line @typescript-eslint/ban-types
-  : T extends object
+  ? T
+  : T extends object // eslint-disable-next-line @typescript-eslint/ban-types
   ? {
-      // eslint-disable-next-line @typescript-eslint/ban-types
-      [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K];
+      [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K]; // eslint-disable-line @typescript-eslint/ban-types
     }
   : T;
 
