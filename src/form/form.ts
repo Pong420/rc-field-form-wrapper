@@ -6,10 +6,14 @@ import { FormProps as RcFormProps } from 'rc-field-form/es/Form';
 import { FieldProps as RcFieldProps } from 'rc-field-form/es/Field';
 import { Meta, FieldError, Store } from 'rc-field-form/lib/interface';
 import { Validator, compose as composeValidator } from './validators';
-import { NamePath, Paths, PathType, DeepPartial } from './typings';
-import { HTMLDivProps } from '@blueprintjs/core';
+import { NamePath, Paths, PathType, DeepPartial, Control } from './typings';
 
-type LabelElementProps = React.DetailedHTMLProps<
+type HTMLDivProps = React.DetailedHTMLProps<
+  React.HTMLAttributes<HTMLDivElement>,
+  HTMLDivElement
+>;
+
+type HTMLLabelProps = React.DetailedHTMLProps<
   React.LabelHTMLAttributes<HTMLLabelElement>,
   HTMLLabelElement
 >;
@@ -108,7 +112,7 @@ export interface FormItemClassName {
 type Rule = NonNullable<RcFieldProps['rules']>[number];
 
 const getValues = (obj: any, paths: (string | number)[]) =>
-  paths.reduce<any>((result, key) => result && result[key], obj);
+  paths.reduce((result, key) => result && result[key], obj);
 
 export function createShouldUpdate(
   names: Array<string | number | (string | number)[]> = []
@@ -151,7 +155,7 @@ export function createForm<S extends {} = Store, V = S>({
         ...props,
         className: [className, ClassNames.item].filter(Boolean).join(' ').trim()
       },
-      React.createElement<LabelElementProps>(
+      React.createElement<HTMLLabelProps>(
         'label',
         { className: ClassNames.label },
         label
@@ -177,16 +181,13 @@ export function createForm<S extends {} = Store, V = S>({
       name: string | number;
     };
 
-    const rules: Rule[] =
+    const rules: Rule[] = [
       typeof validators === 'function'
-        ? [
-            ({ getFieldsValue }) => ({
-              validator: composeValidator(
-                validators(getFieldsValue(deps) as any)
-              )
-            })
-          ]
-        : [{ validator: composeValidator(validators) }];
+        ? ({ getFieldsValue }) => ({
+            validator: composeValidator(validators(getFieldsValue(deps) as S))
+          })
+        : { validator: composeValidator(validators) }
+    ];
 
     return React.createElement(
       RcField,
@@ -199,7 +200,7 @@ export function createForm<S extends {} = Store, V = S>({
         ...props
       },
       (
-        control: any,
+        control: Control<unknown>,
         { touched, validating, errors }: FieldData<S>,
         form: FormInstance<S>
       ) => {
@@ -268,8 +269,8 @@ export function createForm<S extends {} = Store, V = S>({
               : initialValues,
           onFinish:
             onFinish &&
-            ((store: any) => {
-              onFinish(beforeSubmit ? beforeSubmit(store) : store);
+            ((store: unknown) => {
+              onFinish(beforeSubmit ? beforeSubmit(store as S) : (store as V));
             })
         } as RcFormProps,
         children
