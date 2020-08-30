@@ -12,4 +12,4 @@ git remote add origin https://github.com/Pong420/rc-field-form.git
 
 git push -f origin master:build
 
-rm -rf src/form/.git
+rm -rf .git
